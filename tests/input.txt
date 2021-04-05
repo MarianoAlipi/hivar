@@ -1,0 +1,54 @@
+program Team_pp;
+
+class Persona {
+    attributes
+        int : edad;
+        char : nombre[30];
+
+    methods
+        function int UNO (int : x) {
+            return (edad - x);
+        };
+};
+
+variables
+    int : i, j, p;
+    Persona : estudiante;
+byevar
+
+function int fact (int : j) {
+    variables
+        int : i;
+    byevar
+
+    i = j + (p - j * 2 + j);
+    if (j == 1) {
+        return (j);
+    } else {
+        return (j * fact(j - 1));
+    };
+};
+
+function void pelos (int : y) {
+    variables
+        int : x;
+    byevar
+
+    read(estudiante.edad);
+    x = y;
+    while (x < 10) do {
+        write(estudiante.UNO(x));
+        x = x + 1;
+    };
+};
+
+main() {
+    read(p);
+    j = p * 2;
+    i = fact(p);
+    read(estudiante.nombre);
+    pelos(p);
+    from i = 1 to 10 do {
+        write("HelloWorld", alumno.nombre, fact(alumno.edad));
+    };
+};
