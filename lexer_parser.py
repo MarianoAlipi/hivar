@@ -191,9 +191,22 @@ def p_vars_1(p):
 
 def p_vars_arr(p):
     '''
-    vars_arr : LEFT_BRACKET CONST_INT RIGHT_BRACKET
-             | LEFT_BRACKET variable RIGHT_BRACKET
+    vars_arr : LEFT_BRACKET vars_arr_1 RIGHT_BRACKET
              | empty
+    '''
+    p[0] = tuple(p[1:])
+
+def p_vars_arr_1(p):
+    '''
+    vars_arr_1 : vars_arr_2 COMMA vars_arr_2
+               | vars_arr_2
+    '''
+    p[0] = tuple(p[1:])
+
+def p_vars_arr_2(p):
+    '''
+    vars_arr_2 : CONST_INT
+               | exp
     '''
     p[0] = tuple(p[1:])
 

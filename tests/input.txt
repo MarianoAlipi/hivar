@@ -4,6 +4,7 @@ class Persona {
     attributes
         int : edad;
         char : nombre[30];
+        float : matrix[10, 5];
 
     methods
         function int UNO (int : x) {
