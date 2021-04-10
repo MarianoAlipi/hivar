@@ -24,8 +24,8 @@ reserved = {
     'class':        'CLASS_KEYWORD',
     'inherits':     'INHERITS',
     'attributes':   'ATTRIBUTES_KEYWORD',
-    'variables':    'VARS_KEYWORD',
-    'byevar':       'END_VARS', # temp
+    'hivar':        'VARS_KEYWORD',
+    'byevar':       'END_VARS',
     'methods':      'METHODS_KEYWORD',
     'function':     'FUNCTION',
     'return':       'RETURN',
@@ -313,7 +313,7 @@ def p_statement_1(p):
 
 def p_assignment(p):
     '''
-    assignment : variable EQUALS_ASSIGNMENT expression
+    assignment : variable EQUALS_ASSIGNMENT exp
                | variable EQUALS_ASSIGNMENT func_call
     '''
     p[0] = tuple(p[1:])
@@ -328,19 +328,19 @@ def p_variable(p):
 
 def p_expression(p):
     '''
-    expression : exp relational_operator exp
+    expression : exp relational_op exp
                | exp
     '''
     p[0] = tuple(p[1:])
 
-def p_relational_operator(p):
+def p_relational_op(p):
     '''
-    relational_operator : NOT_EQUALS
-                        | EQUALS_COMPARISON
-                        | LESS_THAN
-                        | GREATER_THAN
-                        | AND
-                        | OR
+    relational_op : NOT_EQUALS
+                  | EQUALS_COMPARISON
+                  | LESS_THAN
+                  | GREATER_THAN
+                  | AND
+                  | OR
     '''
     p[0] = p[1]
 
@@ -367,7 +367,7 @@ def p_factor(p):
            | variable
            | func_call
            | PLUS constant
-           | MINUS constant 
+           | MINUS constant
     '''
     p[0] = tuple(p[1:])
 
@@ -394,8 +394,7 @@ def p_func_call_1(p):
 
 def p_func_call_2(p):
     '''
-    func_call_2 : variable func_call_3
-                | exp func_call_3
+    func_call_2 : exp func_call_3
     '''
     p[0] = tuple(p[1:])
 
