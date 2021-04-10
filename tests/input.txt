@@ -12,13 +12,13 @@ class Persona {
         };
 };
 
-variables
+hivar
     int : i, j, p;
     Persona : estudiante;
 byevar
 
 function int fact (int : j) {
-    variables
+    hivar
         int : i;
     byevar
 
@@ -31,7 +31,7 @@ function int fact (int : j) {
 };
 
 function void pelos (int : y) {
-    variables
+    hivar
         int : x;
     byevar
 
