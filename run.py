@@ -1,5 +1,6 @@
 from lexer_parser import lexer, parser
 from file_manager import get_file_content
+from symbol_table import SymbolTable
 
 DEBUG_MODE = 0
 
@@ -14,4 +15,4 @@ except SyntaxError as e:
     print(f'Syntax error: unexpected {e.args[0]}')
 
 
-print()
+st = SymbolTable()
