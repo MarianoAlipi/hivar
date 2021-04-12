@@ -14,5 +14,6 @@ try:
 except SyntaxError as e:
     print(f'Syntax error: unexpected {e.args[0]}')
 
-
-st = SymbolTable()
+if DEBUG_MODE:
+    st = SymbolTable()
+    breakpoint()

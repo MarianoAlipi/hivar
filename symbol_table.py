@@ -19,9 +19,10 @@ class Variable:
 
 
 class Function:
-    def __init__(self, name, func_type):
+    def __init__(self, name, func_type, parameters=[]):
         self.__name = name
         self.__type = func_type
+        self.__params = parameters  # list of variables?
 
     def name(self):
         return self.__name
@@ -29,15 +30,14 @@ class Function:
     def return_type(self):
         return self.__type
 
+    def params(self):
+        return self.__params
+
 
 class Scope:
-    def __init__(self, name):
-        self.__name = name
+    def __init__(self):
         self.__funcs = {}
         self.__vars = {}
-
-    def name(self):
-        return self.__name
 
     def funcs(self):
         return self.__funcs
@@ -87,6 +87,21 @@ class SymbolTable:
             SymbolTable()
         return SymbolTable.__instance
 
+    def scopes(self):
+        return self.__scopes
+
+    def set_curr_type(self, new_type):
+        self.__current_type = new_type
+
+    def current_type(self):
+        return self.__current_type
+
+    def set_curr_id(self, new_id):
+        self.__current_id = new_id
+
+    def current_id(self):
+        return self.__current_id
+
     def __init__(self):
         if SymbolTable.__instance:
             # return False for now, how do we manage errors?
@@ -95,4 +110,7 @@ class SymbolTable:
             return
         else:
             SymbolTable.__instance = self
-            self.scopes = {'global': {}}
+            self.__scopes = {'global': Scope()}
+            self.__current_type = None
+            self.__current_scope = None
+            self.__current_id = None
