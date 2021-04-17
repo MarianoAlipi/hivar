@@ -4,11 +4,6 @@ A01570010
 
 Mariano García Alipi
 A00822247
-
-05/abr/2021
-
-Diseño de compiladores
-Avance 1: Análisis de léxico y sintaxis
 """
 
 from ply import lex
@@ -213,18 +208,18 @@ def p_vars_arr(p):
 
 def p_vars_arr_1(p):
     '''
-    vars_arr_1 : vars_arr_2 save_rows COMMA vars_arr_2 save_cols
-               | vars_arr_2 save_rows
+    vars_arr_1 : vars_arr_2 save_val save_rows COMMA vars_arr_2 save_cols
+               | vars_arr_2 save_val save_rows
     '''
     p[0] = tuple(p[1:])
 
 
 def p_vars_arr_2(p):
     '''
-    vars_arr_2 : CONST_INT save_val
+    vars_arr_2 : CONST_INT
                | exp
     '''
-    p[0] = tuple(p[1:])
+    p[0] = tuple(p[1:]) if len(p[1:]) > 1 else p[1]
 
 
 def p_type(p):
@@ -246,16 +241,15 @@ def p_var_type(p):
 
 def p_vars_2(p):
     '''
-    vars_2 : ID save_var COMMA vars_2
-           | ID save_var
+    vars_2 : ID save_id save_var COMMA vars_2
+           | ID save_id save_var
     '''
     p[0] = tuple(p[1:])
 
 
 def p_funcs(p):
-    # TODO no se si poner save_func despues de id (no guarda parameters) o si tmb guardar paremeters
     '''
-    funcs : FUNCTION func_type ID save_id LEFT_PARENTHESIS parameters RIGHT_PARENTHESIS push_scope LEFT_CURLY vars block_1 RIGHT_CURLY pop_scope SEMICOLON funcs_1
+    funcs : FUNCTION func_type ID save_id save_func LEFT_PARENTHESIS parameters RIGHT_PARENTHESIS push_scope LEFT_CURLY vars block_1 RIGHT_CURLY pop_scope SEMICOLON funcs_1
     '''
     p[0] = tuple(p[1:])
 
@@ -285,11 +279,9 @@ def p_parameters(p):
 
 
 def p_parameters_1(p):
-    # si guardamos save_func después de parameters (esto) en p_funcs vamos a overwrittear el type, cuidado
     '''
     parameters_1 : var_type save_type COLON ID save_parameter parameters_2
     '''
-    # save_parameter o save_id?
     p[0] = tuple(p[1:])
 
 
@@ -567,7 +559,7 @@ def p_save_type(p):
     st.set_curr_type(p[-1])
 
 
-def P_save_id(p):
+def p_save_id(p):
     '''
     save_id :
     '''
@@ -579,56 +571,66 @@ def p_save_var(p):
     '''
     save_var :
     '''
-    # TODO
+    st = SymbolTable.get()
+    st.save_var()
 
+
+def p_save_func(p):
+    '''
+    save_func :
+    '''
+    st = SymbolTable.get()
+    st.save_func()
 
 def p_save_rows(p):
     '''
     save_rows :
     '''
-    # TODO
+    st = SymbolTable.get()
+    st.set_curr_rows()
 
 
 def p_save_cols(p):
     '''
     save_cols :
     '''
-    # TODO
+    st = SymbolTable.get()
+    st.set_curr_cols()
 
 
 def p_push_scope(p):
     '''
     push_scope :
     '''
-    # TODO
+    # TODO refactor (check st.push_scope() declaration)
+    st = SymbolTable.get()
+    st.push_scope()
 
 
 def p_pop_scope(p):
     '''
     pop_scope :
     '''
-    # TODO
+    # TODO refactor (check st.pop_scope() declaration)
+    st = SymbolTable.get()
+    st.pop_scope()
 
 
 def p_save_parameter(p):
     '''
     save_parameter :
     '''
-    # TODO
+    st = SymbolTable.get()
+    st.save_parameter()
 
 
+# TODO rename to set_val?
 def p_save_val(p):
     '''
     save_val :
     '''
-    # TODO
-
-
-def p_save_id(p):
-    '''
-    save_id :
-    '''
-    # TODO
+    st = SymbolTable.get()
+    st.set_val(p[-1])
 
 
 # Build the lexer and parser.
