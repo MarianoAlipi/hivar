@@ -4,15 +4,11 @@ A01570010
 
 Mariano García Alipi
 A00822247
-
-05/abr/2021
-
-Diseño de compiladores
-Avance 1: Análisis de léxico y sintaxis
 """
 
 from ply import lex
 from ply import yacc
+from symbol_table import SymbolTable
 
 # List of reserved words.
 reserved = {
@@ -212,8 +208,8 @@ def p_vars_arr(p):
 
 def p_vars_arr_1(p):
     '''
-    vars_arr_1 : vars_arr_2 COMMA vars_arr_2
-               | vars_arr_2
+    vars_arr_1 : vars_arr_2 save_val save_rows COMMA vars_arr_2 save_cols
+               | vars_arr_2 save_val save_rows
     '''
     p[0] = tuple(p[1:])
 
@@ -223,14 +219,14 @@ def p_vars_arr_2(p):
     vars_arr_2 : CONST_INT
                | exp
     '''
-    p[0] = tuple(p[1:])
+    p[0] = tuple(p[1:]) if len(p[1:]) > 1 else p[1]
 
 
 def p_type(p):
     '''
-    type : INT
-         | FLOAT
-         | CHAR
+    type : INT save_type
+         | FLOAT save_type
+         | CHAR save_type
     '''
     p[0] = p[1]
 
@@ -238,22 +234,22 @@ def p_type(p):
 def p_var_type(p):
     '''
     var_type : type
-             | ID
+             | ID save_type
     '''
     p[0] = p[1]
 
 
 def p_vars_2(p):
     '''
-    vars_2 : ID COMMA vars_2
-           | ID
+    vars_2 : ID save_id save_var COMMA vars_2
+           | ID save_id save_var
     '''
     p[0] = tuple(p[1:])
 
 
 def p_funcs(p):
     '''
-    funcs : FUNCTION func_type ID LEFT_PARENTHESIS parameters RIGHT_PARENTHESIS LEFT_CURLY vars block_1 RIGHT_CURLY SEMICOLON funcs_1
+    funcs : FUNCTION func_type ID save_id save_func LEFT_PARENTHESIS parameters RIGHT_PARENTHESIS push_scope LEFT_CURLY vars block_1 RIGHT_CURLY pop_scope SEMICOLON funcs_1
     '''
     p[0] = tuple(p[1:])
 
@@ -269,7 +265,7 @@ def p_funcs_1(p):
 def p_func_type(p):
     '''
     func_type : type
-              | VOID
+              | VOID save_type
     '''
     p[0] = p[1]
 
@@ -284,7 +280,7 @@ def p_parameters(p):
 
 def p_parameters_1(p):
     '''
-    parameters_1 : var_type COLON ID parameters_2
+    parameters_1 : var_type save_type COLON ID save_parameter parameters_2
     '''
     p[0] = tuple(p[1:])
 
@@ -538,7 +534,7 @@ def p_non_cond_loop(p):
 
 def p_empty(p):
     '''
-    empty : 
+    empty :
     '''
     return None
 
@@ -553,6 +549,86 @@ def p_error(p):
     else:
         token = f'{p.type}(\'{p.value}\') at line {p.lineno}'
     raise SyntaxError(token)
+
+
+def p_save_type(p):
+    '''
+    save_type :
+    '''
+    st = SymbolTable.get()
+    st.set_curr_type(p[-1])
+
+
+def p_save_id(p):
+    '''
+    save_id :
+    '''
+    st = SymbolTable.get()
+    st.set_curr_id(p[-1])
+
+
+def p_save_var(p):
+    '''
+    save_var :
+    '''
+    st = SymbolTable.get()
+    st.save_var()
+
+
+def p_save_func(p):
+    '''
+    save_func :
+    '''
+    st = SymbolTable.get()
+    st.save_func()
+
+def p_save_rows(p):
+    '''
+    save_rows :
+    '''
+    st = SymbolTable.get()
+    st.set_curr_rows()
+
+
+def p_save_cols(p):
+    '''
+    save_cols :
+    '''
+    st = SymbolTable.get()
+    st.set_curr_cols()
+
+
+def p_push_scope(p):
+    '''
+    push_scope :
+    '''
+    st = SymbolTable.get()
+    st.push_scope()
+
+
+def p_pop_scope(p):
+    '''
+    pop_scope :
+    '''
+    st = SymbolTable.get()
+    st.pop_scope()
+
+
+def p_save_parameter(p):
+    '''
+    save_parameter :
+    '''
+    st = SymbolTable.get()
+    st.save_parameter()
+
+
+# TODO rename to set_val?
+def p_save_val(p):
+    '''
+    save_val :
+    '''
+    st = SymbolTable.get()
+    st.set_val(p[-1])
 
 
 # Build the lexer and parser.
