@@ -1,3 +1,5 @@
+from collections import deque
+
 ##########################
 ## internal use classes ##
 ##########################
@@ -33,17 +35,26 @@ class Function:
     def params(self):
         return self.__params
 
-
+# The scope stack is a stack of tuples:
+# [ ('global', Scope()), ('pelos', Scope()), ('foo', Scope()) ]
+# The key is the name of the class/function/scope.
+# Each scope has a dictionary of contained scopes:
+# (global) scopes = { 'pelos': Scope() }
+# (pelos:) scopes = { 'foo': Scope(), 'bar': Scope() }
 class Scope:
     def __init__(self):
         self.__funcs = {}
         self.__vars = {}
+        self.__scopes = {}
 
     def funcs(self):
         return self.__funcs
 
     def vars(self):
         return self.__vars
+
+    def scopes(self):
+        return self.__scopes
 
     def func(self, func_name):
         if func_name in self.funcs():
@@ -97,6 +108,9 @@ class SymbolTable:
     def current_scope(self):
         return self.__current_scope
 
+    def scope_stack(self):
+        return self.__scope_stack
+
     def set_curr_type(self, new_type):
         self.__current_type = new_type
 
@@ -132,8 +146,8 @@ class SymbolTable:
     # save the variable as an array/matrix.
     def save_var(self):
         self.current_scope().add_var(self.current_id(), self.current_type())
-        self.set_curr_rows(None)
-        self.set_curr_cols(None)
+        #self.set_curr_rows()
+        #self.set_curr_cols()
 
     def save_func(self):
         scope = self.current_scope()
@@ -150,18 +164,21 @@ class SymbolTable:
     def val(self):
         return self.__val
 
-    # TODO: refactor (see pop_scope() below)
     def push_scope(self):
-        pass
+        # TODO
+        # A scope isn't necessarily a function.
+        # It can be a class too, so we need a better
+        # way to get the scope's name.
+        # Or should we generate a random name?
+        func_name = self.last_saved_func().name()
+        scope_obj = Scope()
+        self.current_scope().scopes()[func_name] = scope_obj
+        self.set_curr_scope(self.current_scope().scopes()[func_name])
+        self.scope_stack().append( (func_name, scope_obj) )
 
-    # TODO
-    # Stack/list of tuples [ ('global', Scope()), ('pelos', Scope()), ('foo', Scope()) ]
-    # Key is the name of the class/function/scope
-    # each scope would have a dictionary of contained scopes:
-    # (global:) scopes = {'pelos': Scope()}
-    # (pelos:) scopes = {'foo': Scope(), 'bar': Scope()}
     def pop_scope(self):
-        pass
+        old_scope = self.scope_stack().pop()
+        self.set_curr_scope(self.scope_stack()[-1][1])
 
     def __init__(self):
         if SymbolTable.__instance:
@@ -173,6 +190,8 @@ class SymbolTable:
             SymbolTable.__instance = self
             self.__scopes = {'global': Scope()}
             self.__current_scope = self.scopes()['global']
+            self.__scope_stack = deque()
+            self.__scope_stack.append( ('global', self.current_scope()) )
             self.__current_type = None
             self.__current_id = None
             self.__last_saved_func = None

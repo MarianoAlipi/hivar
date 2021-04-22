@@ -602,7 +602,6 @@ def p_push_scope(p):
     '''
     push_scope :
     '''
-    # TODO refactor (check st.push_scope() declaration)
     st = SymbolTable.get()
     st.push_scope()
 
@@ -611,7 +610,6 @@ def p_pop_scope(p):
     '''
     pop_scope :
     '''
-    # TODO refactor (check st.pop_scope() declaration)
     st = SymbolTable.get()
     st.pop_scope()
 
