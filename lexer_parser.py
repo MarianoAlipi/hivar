@@ -11,7 +11,6 @@ from ply import yacc
 from symbol_table import SymbolTable
 from reserved import reserved, tokens
 
-
 # Regular expression rules for simple tokens.
 t_COMMA = r','
 t_PERIOD = r'\.'
@@ -100,7 +99,7 @@ def p_program(p):
 
 def p_classes(p):
     '''
-    classes : CLASS_KEYWORD ID inheritance LEFT_CURLY attributes methods RIGHT_CURLY SEMICOLON classes
+    classes : CLASS_KEYWORD ID save_id push_scope inheritance LEFT_CURLY attributes methods RIGHT_CURLY pop_scope SEMICOLON classes
             | empty
     '''
     p[0] = tuple(p[1:])
@@ -140,15 +139,15 @@ def p_vars(p):
 
 def p_vars_1(p):
     '''
-    vars_1 : var_type COLON vars_2 vars_arr SEMICOLON vars_1
-           | var_type COLON vars_2 vars_arr SEMICOLON
+    vars_1 : var_type COLON vars_2 vars_arr save_var SEMICOLON vars_1
+           | var_type COLON vars_2 vars_arr save_var SEMICOLON
     '''
     p[0] = tuple(p[1:])
 
 
 def p_vars_arr(p):
     '''
-    vars_arr : LEFT_BRACKET vars_arr_1 RIGHT_BRACKET
+    vars_arr : init_arr LEFT_BRACKET vars_arr_1 RIGHT_BRACKET
              | empty
     '''
     p[0] = tuple(p[1:])
@@ -156,7 +155,7 @@ def p_vars_arr(p):
 
 def p_vars_arr_1(p):
     '''
-    vars_arr_1 : vars_arr_2 set_val save_rows COMMA vars_arr_2 save_cols
+    vars_arr_1 : vars_arr_2 set_val save_rows COMMA vars_arr_2 set_val save_cols
                | vars_arr_2 set_val save_rows
     '''
     p[0] = tuple(p[1:])
@@ -190,14 +189,14 @@ def p_var_type(p):
 def p_vars_2(p):
     '''
     vars_2 : ID save_id save_var COMMA vars_2
-           | ID save_id save_var
+           | ID save_id
     '''
     p[0] = tuple(p[1:])
 
 
 def p_funcs(p):
     '''
-    funcs : FUNCTION func_type ID save_id save_func LEFT_PARENTHESIS parameters RIGHT_PARENTHESIS push_scope LEFT_CURLY vars block_1 RIGHT_CURLY pop_scope SEMICOLON funcs_1
+    funcs : FUNCTION func_type ID save_id save_func push_scope LEFT_PARENTHESIS parameters RIGHT_PARENTHESIS LEFT_CURLY vars block_1 RIGHT_CURLY pop_scope SEMICOLON funcs_1
     '''
     p[0] = tuple(p[1:])
 
@@ -228,7 +227,7 @@ def p_parameters(p):
 
 def p_parameters_1(p):
     '''
-    parameters_1 : var_type save_type COLON ID save_parameter parameters_2
+    parameters_1 : var_type save_type COLON ID save_id save_parameter parameters_2
     '''
     p[0] = tuple(p[1:])
 
@@ -579,6 +578,14 @@ def p_set_val(p):
     '''
     st = SymbolTable.get()
     st.set_val(p[-1])
+
+
+def p_init_arr(p):
+    '''
+    init_arr :
+    '''
+    st = SymbolTable.get()
+    st.set_rows_cols_to_none()
 
 
 # Build the lexer and parser.

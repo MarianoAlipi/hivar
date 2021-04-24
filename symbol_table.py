@@ -6,10 +6,12 @@ from collections import deque
 
 
 class Variable:
-    def __init__(self, name, var_type):
+    def __init__(self, name, var_type, rows=1, cols=1):
         self.__name = name
         self.__type = var_type
         self.__value = None
+        self.__rows = rows
+        self.__cols = cols
 
     def name(self):
         return self.__name
@@ -19,6 +21,12 @@ class Variable:
 
     def value(self):
         return self.__value
+
+    def rows(self):
+        return self.__rows
+
+    def cols(self):
+        return self.__cols
 
 
 class Function:
@@ -35,13 +43,6 @@ class Function:
 
     def params(self):
         return self.__params
-
-# The scope stack is a stack of tuples:
-# [ ('global', Scope()), ('pelos', Scope()), ('foo', Scope()) ]
-# The key is the name of the class/function/scope.
-# Each scope has a dictionary of contained scopes:
-# (global) scopes = { 'pelos': Scope() }
-# (pelos:) scopes = { 'foo': Scope(), 'bar': Scope() }
 
 
 class Scope:
@@ -76,11 +77,11 @@ class Scope:
         self.__funcs[new_name] = Function(new_name, func_type)
         return self.__funcs[new_name]
 
-    def add_var(self, new_name, var_type=None):
+    def add_var(self, new_name, var_type=None, rows=1, cols=1):
         if new_name in self.vars():
             raise Exception(
                 f'Variable "{new_name}" is already declared in this scope')
-        self.__vars[new_name] = Variable(new_name, var_type)
+        self.__vars[new_name] = Variable(new_name, var_type, rows, cols)
 
 ##########################
 ## external use classes ##
@@ -98,14 +99,11 @@ class SymbolTable:
             SymbolTable()
         return SymbolTable.__instance
 
-    def scopes(self):
-        return self.__scopes
-
-    def set_curr_scope(self, new_scope):
-        self.__current_scope = new_scope
+    def current_scope_name(self):
+        return self.scope_stack()[-1][0]
 
     def current_scope(self):
-        return self.__current_scope
+        return self.scope_stack()[-1][1]
 
     def scope_stack(self):
         return self.__scope_stack
@@ -140,13 +138,20 @@ class SymbolTable:
     def current_cols(self):
         return self.__current_cols
 
-    # TODO
-    # If current_rows and/or current_cols have a value,
-    # save the variable as an array/matrix.
+    def set_rows_cols_to_none(self):
+        self.__current_cols = None
+        self.__current_rows = None
+
     def save_var(self):
-        self.current_scope().add_var(self.current_id(), self.current_type())
-        # self.set_curr_rows()
-        # self.set_curr_cols()
+        if self.current_rows():
+            if self.current_cols():
+                self.current_scope().add_var(self.current_id(), self.current_type(),
+                                             self.current_rows(), self.current_cols())
+            else:
+                self.current_scope().add_var(self.current_id(),
+                                             self.current_type(), self.current_rows())
+        else:
+            self.current_scope().add_var(self.current_id(), self.current_type())
 
     def save_func(self):
         scope = self.current_scope()
@@ -156,6 +161,7 @@ class SymbolTable:
     def save_parameter(self):
         param = Variable(self.current_id(), self.current_type())
         self.last_saved_func().params().append(param)
+        self.current_scope().add_var(self.current_id(), self.current_type())
 
     def set_val(self, new_val):
         self.__val = new_val
@@ -164,20 +170,13 @@ class SymbolTable:
         return self.__val
 
     def push_scope(self):
-        # TODO
-        # A scope isn't necessarily a function.
-        # It can be a class too, so we need a better
-        # way to get the scope's name.
-        # Or should we generate a random name?
-        func_name = self.last_saved_func().name()
+        name = self.current_id()
         scope_obj = Scope()
-        self.current_scope().scopes()[func_name] = scope_obj
-        self.set_curr_scope(self.current_scope().scopes()[func_name])
-        self.scope_stack().append((func_name, scope_obj))
+        self.current_scope().scopes()[name] = scope_obj
+        self.scope_stack().append((name, scope_obj))
 
     def pop_scope(self):
         self.scope_stack().pop()
-        self.set_curr_scope(self.scope_stack()[-1][1])
 
     def __init__(self):
         if SymbolTable.__instance:
@@ -185,10 +184,8 @@ class SymbolTable:
                 "Symbol Table already declared, use 'SymbolTable.get()'")
         else:
             SymbolTable.__instance = self
-            self.__scopes = {'global': Scope()}
-            self.__current_scope = self.scopes()['global']
             self.__scope_stack = deque()
-            self.__scope_stack.append(('global', self.current_scope()))
+            self.__scope_stack.append(('global', Scope()))
             self.__current_type = None
             self.__current_id = None
             self.__last_saved_func = None
