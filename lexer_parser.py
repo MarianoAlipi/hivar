@@ -79,9 +79,11 @@ t_LEFT_BRACKET = r'\['
 t_RIGHT_BRACKET = r'\]'
 t_NOT_EQUALS = r'!='
 t_EQUALS_COMPARISON = r'=='
-t_EQUALS_ASSIGNMENT = r'='
+t_LESS_EQUALS = r'<='
+t_GREATER_EQUALS = r'>='
 t_LESS_THAN = r'<'
 t_GREATER_THAN = r'>'
+t_EQUALS_ASSIGNMENT = r'='
 t_PLUS = r'\+'
 t_MINUS = r'\-'
 t_MULTIPLY = r'\*'
@@ -366,6 +368,8 @@ def p_relational_op(p):
     '''
     relational_op : NOT_EQUALS
                   | EQUALS_COMPARISON
+                  | LESS_EQUALS
+                  | GREATER_EQUALS
                   | LESS_THAN
                   | GREATER_THAN
                   | AND

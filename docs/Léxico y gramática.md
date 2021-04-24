@@ -45,9 +45,11 @@ Token                   | Expresión regular | Ejemplo
 `RIGHT_BRACKET`         | `\]`              | `]`
 `NOT_EQUALS`            | `!=`              | `!=`
 `EQUALS_COMPARISON`     | `==`              | `==`
-`EQUALS_ASSIGNMENT`     | `=`               | `=`
+`LESS_EQUALS`           | `<=`              | `<=`
+`GREATER_EQUALS`        | `>=`              | `>=`
 `LESS_THAN`             | `<`               | `<`
 `GREATER_THAN`          | `>`               | `>`
+`EQUALS_ASSIGNMENT`     | `=`               | `=`
 `PLUS`                  | `\+`              | `+`
 `MINUS`                 | `\-`              | `-`
 `MULTIPLY`              | `\*`              | `*`
