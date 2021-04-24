@@ -43,6 +43,8 @@ tokens = [
     'EQUALS_ASSIGNMENT',
     'LESS_THAN',
     'GREATER_THAN',
+    'LESS_EQUALS',
+    'GREATER_EQUALS',
     'PLUS',
     'MINUS',
     'MULTIPLY',

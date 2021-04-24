@@ -4,6 +4,7 @@ from collections import deque
 ## internal use classes ##
 ##########################
 
+
 class Variable:
     def __init__(self, name, var_type):
         self.__name = name
@@ -41,6 +42,8 @@ class Function:
 # Each scope has a dictionary of contained scopes:
 # (global) scopes = { 'pelos': Scope() }
 # (pelos:) scopes = { 'foo': Scope(), 'bar': Scope() }
+
+
 class Scope:
     def __init__(self):
         self.__funcs = {}
@@ -68,19 +71,15 @@ class Scope:
 
     def add_func(self, new_name, func_type=None):
         if new_name in self.funcs():
-            # return False for now, how do we manage errors?
-            print(
+            raise Exception(
                 f'Function "{new_name}" is already declared in this scope')
-            return False
         self.__funcs[new_name] = Function(new_name, func_type)
         return self.__funcs[new_name]
 
     def add_var(self, new_name, var_type=None):
         if new_name in self.vars():
-            # return False for now, how do we manage errors?
-            print(
+            raise Exception(
                 f'Variable "{new_name}" is already declared in this scope')
-            return False
         self.__vars[new_name] = Variable(new_name, var_type)
 
 ##########################
@@ -104,7 +103,7 @@ class SymbolTable:
 
     def set_curr_scope(self, new_scope):
         self.__current_scope = new_scope
-        
+
     def current_scope(self):
         return self.__current_scope
 
@@ -146,8 +145,8 @@ class SymbolTable:
     # save the variable as an array/matrix.
     def save_var(self):
         self.current_scope().add_var(self.current_id(), self.current_type())
-        #self.set_curr_rows()
-        #self.set_curr_cols()
+        # self.set_curr_rows()
+        # self.set_curr_cols()
 
     def save_func(self):
         scope = self.current_scope()
@@ -174,24 +173,22 @@ class SymbolTable:
         scope_obj = Scope()
         self.current_scope().scopes()[func_name] = scope_obj
         self.set_curr_scope(self.current_scope().scopes()[func_name])
-        self.scope_stack().append( (func_name, scope_obj) )
+        self.scope_stack().append((func_name, scope_obj))
 
     def pop_scope(self):
-        old_scope = self.scope_stack().pop()
+        self.scope_stack().pop()
         self.set_curr_scope(self.scope_stack()[-1][1])
 
     def __init__(self):
         if SymbolTable.__instance:
-            # return False for now, how do we manage errors?
-            print(
+            raise Exception(
                 "Symbol Table already declared, use 'SymbolTable.get()'")
-            return False
         else:
             SymbolTable.__instance = self
             self.__scopes = {'global': Scope()}
             self.__current_scope = self.scopes()['global']
             self.__scope_stack = deque()
-            self.__scope_stack.append( ('global', self.current_scope()) )
+            self.__scope_stack.append(('global', self.current_scope()))
             self.__current_type = None
             self.__current_id = None
             self.__last_saved_func = None
