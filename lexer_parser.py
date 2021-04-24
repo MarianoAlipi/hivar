@@ -9,62 +9,8 @@ A00822247
 from ply import lex
 from ply import yacc
 from symbol_table import SymbolTable
+from reserved import reserved, tokens
 
-# List of reserved words.
-reserved = {
-    'program':      'PROGRAM_KEYWORD',
-    'main':         'MAIN_KEYWORD',
-    'class':        'CLASS_KEYWORD',
-    'inherits':     'INHERITS',
-    'attributes':   'ATTRIBUTES_KEYWORD',
-    'hivar':        'VARS_KEYWORD',
-    'byevar':       'END_VARS',
-    'methods':      'METHODS_KEYWORD',
-    'function':     'FUNCTION',
-    'return':       'RETURN',
-    'read':         'READ',
-    'write':        'WRITE',
-    'int':          'INT',
-    'float':        'FLOAT',
-    'char':         'CHAR',
-    'void':         'VOID',
-    'if':           'IF',
-    'elsif':        'ELSIF',
-    'else':         'ELSE',
-    'while':        'WHILE',
-    'do':           'DO',
-    'from':         'FROM',
-    'to':           'TO'
-}
-
-# List of token names.
-tokens = [
-    'COMMA',
-    'PERIOD',
-    'COLON',
-    'SEMICOLON',
-    'LEFT_PARENTHESIS',
-    'RIGHT_PARENTHESIS',
-    'LEFT_CURLY',
-    'RIGHT_CURLY',
-    'LEFT_BRACKET',
-    'RIGHT_BRACKET',
-    'NOT_EQUALS',
-    'EQUALS_COMPARISON',
-    'EQUALS_ASSIGNMENT',
-    'LESS_THAN',
-    'GREATER_THAN',
-    'PLUS',
-    'MINUS',
-    'MULTIPLY',
-    'DIVIDE',
-    'AND',
-    'OR',
-    'ID',
-    'CONST_INT',
-    'CONST_FLOAT',
-    'CONST_STRING'
-] + list(reserved.values())
 
 # Regular expression rules for simple tokens.
 t_COMMA = r','
@@ -210,8 +156,8 @@ def p_vars_arr(p):
 
 def p_vars_arr_1(p):
     '''
-    vars_arr_1 : vars_arr_2 save_val save_rows COMMA vars_arr_2 save_cols
-               | vars_arr_2 save_val save_rows
+    vars_arr_1 : vars_arr_2 set_val save_rows COMMA vars_arr_2 save_cols
+               | vars_arr_2 set_val save_rows
     '''
     p[0] = tuple(p[1:])
 
@@ -586,6 +532,7 @@ def p_save_func(p):
     st = SymbolTable.get()
     st.save_func()
 
+
 def p_save_rows(p):
     '''
     save_rows :
@@ -626,10 +573,9 @@ def p_save_parameter(p):
     st.save_parameter()
 
 
-# TODO rename to set_val?
-def p_save_val(p):
+def p_set_val(p):
     '''
-    save_val :
+    set_val :
     '''
     st = SymbolTable.get()
     st.set_val(p[-1])
