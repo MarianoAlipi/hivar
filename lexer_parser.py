@@ -5,11 +5,15 @@ A01570010
 Mariano García Alipi
 A00822247
 """
+import uuid
 
 from ply import lex
 from ply import yacc
-from symbol_table import SymbolTable
+from structures.symbol_table import SymbolTable, Variable
+from structures.stack import Stack
+from structures.quadruples import Quad
 from reserved import reserved, tokens
+from utils.semantics import match_operators, solve_quad
 
 # Regular expression rules for simple tokens.
 t_COMMA = r','
@@ -115,10 +119,18 @@ def p_inheritance(p):
 
 def p_attributes(p):
     '''
-    attributes : ATTRIBUTES_KEYWORD vars_1
+    attributes : ATTRIBUTES_KEYWORD vars_1 set_vars_as_attrs
                | empty
     '''
     p[0] = tuple(p[1:])
+
+
+def p_set_vars_as_attrs(p):
+    '''
+    set_vars_as_attrs :
+    '''
+    st = SymbolTable.get()
+    st.current_scope().set_vars_as_attrs()
 
 
 def p_methods(p):
@@ -163,7 +175,7 @@ def p_vars_arr_1(p):
 
 def p_vars_arr_2(p):
     '''
-    vars_arr_2 : CONST_INT
+    vars_arr_2 : CONST_INT 
                | exp
     '''
     p[0] = tuple(p[1:]) if len(p[1:]) > 1 else p[1]
@@ -286,19 +298,45 @@ def p_statement_1(p):
 
 def p_assignment(p):
     '''
-    assignment : variable EQUALS_ASSIGNMENT exp
-               | variable EQUALS_ASSIGNMENT func_call
+    assignment : variable set_var_to_assign EQUALS_ASSIGNMENT exp assign_res
+               | variable set_var_to_assign EQUALS_ASSIGNMENT func_call assign_res
     '''
     p[0] = tuple(p[1:])
+
+
+def p_set_var_to_assign(p):
+    '''
+    set_var_to_assign :
+    '''
+    st = SymbolTable.get()
+    st.set_var_to_assign()
+
+
+def p_assign_res(p):
+    '''
+    assign_res :
+    '''
+    st = SymbolTable.get()
+    st.assign_res()
 
 
 def p_variable(p):
+    # set_var_as_current pone los ids
     '''
-    variable : ID LEFT_BRACKET exp COMMA exp RIGHT_BRACKET
-             | ID PERIOD ID
-             | ID
+    variable : init_variable ID set_var_as_current LEFT_BRACKET exp save_rows COMMA exp save_cols RIGHT_BRACKET
+             | init_variable ID set_var_as_current LEFT_BRACKET exp save_rows RIGHT_BRACKET
+             | init_variable ID save_id PERIOD ID set_curr_attribute
+             | ID set_var_as_current 
     '''
     p[0] = tuple(p[1:])
+
+
+def p_set_curr_attribute(p):
+    '''
+    set_curr_attribute :
+    '''
+    st = SymbolTable.get()
+    st.set_curr_attribute(p[-1])
 
 
 def p_expression(p):
@@ -325,40 +363,157 @@ def p_relational_op(p):
 
 def p_exp(p):
     '''
-    exp : term PLUS exp
-        | term MINUS exp
-        | term
+    exp : term eval_exp PLUS push_plus exp
+        | term eval_exp MINUS push_minus exp
+        | term eval_exp set_current_result
     '''
     p[0] = tuple(p[1:])
+
+
+def p_set_current_result(p):
+    '''
+    set_current_result :
+    '''
+    st = SymbolTable.get()
+    res = st.operands().pop()
+    st.set_current_result(res)
+
+
+def p_eval_exp(p):
+    '''
+    eval_exp :
+    '''
+    st = SymbolTable.get()
+    if st.operators().top() == '+' or st.operators().top() == '-':
+        right_op = st.operands().pop()
+        right_type = st.op_types().pop()
+        left_op = st.operands().pop()
+        left_type = st.op_types().pop()
+        operator = st.operands().pop()
+        res_type = match_operators(left_type, right_type, operator)
+        quad = Quad(operator, left_op, right_op, None)
+        quad = solve_quad(quad)
+        st.quads().push(quad)
+        st.operands().push(quad.result())
+        st.op_types().push(res_type)
+
+
+def p_push_plus(p):
+    '''
+    push_plus :
+    '''
+    st = SymbolTable.get()
+    st.operators().push('+')
+
+
+def p_push_minus(p):
+    '''
+    push_minus :
+    '''
+    st = SymbolTable.get()
+    st.operators().push('-')
 
 
 def p_term(p):
     '''
-    term : factor MULTIPLY factor
-         | factor DIVIDE factor
-         | factor
+    term : factor eval_term MULTIPLY push_multiply term
+         | factor eval_term DIVIDE push_divide term
+         | factor eval_term
     '''
     p[0] = tuple(p[1:])
+
+
+def p_eval_term(p):
+    '''
+    eval_term :
+    '''
+    st = SymbolTable.get()
+    if st.operators().top() == '*' or st.operators().top() == '/':
+        right_op = st.operands().pop()
+        right_type = st.op_types().pop()
+        left_op = st.operands().pop()
+        left_type = st.op_types().pop()
+        operator = st.operands().pop()
+        res_type = match_operators(left_type, right_type, operator)
+        quad = Quad(operator, left_op, right_op, None)
+        quad = solve_quad(quad)
+        st.quads().push(quad)
+        st.operands().push(quad.result())
+        st.op_types().push(res_type)
+
+
+def p_push_multiply(p):
+    '''
+    push_multiply :
+    '''
+    st = SymbolTable.get()
+    st.operators().push('*')
+
+
+def p_push_divide(p):
+    '''
+    push_divide :
+    '''
+    st = SymbolTable.get()
+    st.operators().push('/')
 
 
 def p_factor(p):
     '''
-    factor : LEFT_PARENTHESIS expression RIGHT_PARENTHESIS
-           | constant
-           | variable
-           | func_call
-           | PLUS constant
-           | MINUS constant
+    factor : LEFT_PARENTHESIS expression RIGHT_PARENTHESIS save_operand
+           | constant save_operand
+           | variable save_operand
+           | func_call save_operand
+           | PLUS set_constant_sign constant save_operand
+           | MINUS set_constant_sign constant save_operand
     '''
     p[0] = tuple(p[1:])
 
 
+def p_set_constant_sign(p):
+    '''
+    set_constant_sign : 
+    '''
+    st = SymbolTable.get()
+    st.curr_constant_sign = p[-1]
+
+
 def p_constant(p):
     '''
-    constant : CONST_INT
-             | CONST_FLOAT
+    constant : CONST_INT save_int_var_as_current
+             | CONST_FLOAT save_float_var_as_current
     '''
     p[0] = p[1]
+
+
+def p_save_int_var_as_current(p):
+    '''
+    save_int_var_as_current : 
+    '''
+    st = SymbolTable.get()
+    st.set_curr_type('int')
+    st.set_curr_id(p[-1])
+
+    if st.constant_sign() == '-':
+        st.set_curr_id(p[-1] * -1)
+    else:
+        st.set_curr_id(p[-1])
+    st.set_constant_sign('+')
+
+
+def p_save_float_var_as_current(p):
+    '''
+    save_float_var_as_current : 
+    '''
+    st = SymbolTable.get()
+    st.set_curr_type('float')
+    st.set_curr_id(p[-1])
+
+    if st.constant_sign() == '-':
+        st.set_curr_id(p[-1] * -1)
+    else:
+        st.set_curr_id(p[-1])
+    st.set_constant_sign('+')
 
 
 def p_func_call(p):
@@ -580,12 +735,42 @@ def p_set_val(p):
     st.set_val(p[-1])
 
 
+def p_init_variable(p):
+    '''
+    init_variable :
+    '''
+    st = SymbolTable.get()
+    # start always by setting to none, the logic will check if these exists and act accordingly
+    st.set_rows_cols_to_none()
+    st.set_curr_attribute(None)
+
+
 def p_init_arr(p):
     '''
     init_arr :
     '''
     st = SymbolTable.get()
+    # start always by setting to none, the logic will check if these exists and act accordingly
     st.set_rows_cols_to_none()
+
+
+def p_save_operand(p):
+    '''
+    save_operand :
+    '''
+    st = SymbolTable.get()
+    st.operands().push(st.current_id())
+    st.op_types().push(st.current_type())
+
+
+def p_set_var_as_current(p):
+    '''
+    set_var_as_current :
+    '''
+    st = SymbolTable.get()
+    curr_var = st.current_scope().get_var_from_id(p[-1])
+    st.set_curr_id(curr_var.name())
+    st.set_curr_type(curr_var.var_type())
 
 
 # Build the lexer and parser.
