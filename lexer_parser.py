@@ -333,12 +333,36 @@ def p_assign_res(p):
 def p_variable(p):
     # set_var_as_current pone los ids
     '''
-    variable : init_variable ID set_var_as_current LEFT_BRACKET exp save_rows COMMA exp save_cols RIGHT_BRACKET
-             | init_variable ID set_var_as_current LEFT_BRACKET exp save_rows RIGHT_BRACKET
-             | init_variable ID save_id PERIOD ID set_curr_attribute
-             | ID set_var_as_current 
+    variable : ID init_and_set_as_curr_var LEFT_BRACKET exp save_rows COMMA exp save_cols RIGHT_BRACKET
+             | ID init_and_set_as_curr_var LEFT_BRACKET exp save_rows RIGHT_BRACKET
+             | ID init_and_save_id PERIOD ID set_curr_attribute
+             | ID init_and_set_as_curr_var 
     '''
     p[0] = tuple(p[1:])
+
+
+def p_init_and_set_as_curr_var(p):
+    '''
+    init_and_set_as_curr_var :
+    '''
+    st = SymbolTable.get()
+    # start always by setting to none, the logic will check if these exists and act accordingly
+    st.set_rows_cols_to_none()
+    st.set_curr_attribute(None)
+    curr_var = st.current_scope().get_var_from_id(p[-1])
+    st.set_curr_id(curr_var.name())
+    st.set_curr_type(curr_var.var_type())
+
+
+def p_init_and_save_id(p):
+    '''
+    init_and_save_id :
+    '''
+    st = SymbolTable.get()
+    # start always by setting to none, the logic will check if these exists and act accordingly
+    st.set_rows_cols_to_none()
+    st.set_curr_attribute(None)
+    st.set_curr_id(p[-1])
 
 
 def p_set_curr_attribute(p):
@@ -752,6 +776,8 @@ def p_init_variable(p):
     '''
     init_variable :
     '''
+    breakpoint()
+    p[0] = tuple(p[1:])
     st = SymbolTable.get()
     # start always by setting to none, the logic will check if these exists and act accordingly
     st.set_rows_cols_to_none()
@@ -776,11 +802,12 @@ def p_save_operand(p):
     st.op_types().push(st.current_type())
 
 
-def p_set_var_as_current(p):
+def p_set_var_as_current(param):
     '''
     set_var_as_current :
     '''
     st = SymbolTable.get()
+    breakpoint()
     curr_var = st.current_scope().get_var_from_id(p[-1])
     st.set_curr_id(curr_var.name())
     st.set_curr_type(curr_var.var_type())

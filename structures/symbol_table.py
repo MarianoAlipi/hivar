@@ -131,6 +131,7 @@ class Scope:
                     return var
                 return None
             else:
+                breakpoint()
                 raise Exception(
                     f'Can not find variable "{var_id}"')
 
@@ -323,10 +324,11 @@ class SymbolTable:
         # check if its an object
         if self.current_attribute_id():
             var_to_assign += '.' + self.current_attribute_id()
-        if self.current_rows() > 1:
-            var_to_assign += f'[{self.current_rows()}]'
-            if self.current_cols() > 1:
-                var_to_assign += f'[{self.current_cols()}]'
+        if self.current_rows():
+            if self.current_rows() > 1:
+                var_to_assign += f'[{self.current_rows()}]'
+                if self.current_cols() > 1:
+                    var_to_assign += f'[{self.current_cols()}]'
         self.__var_to_assign = var_to_assign
 
     def current_result(self):
@@ -339,11 +341,12 @@ class SymbolTable:
         return self.__current_attribute
 
     def set_curr_attribute(self, attr_id):
-        breakpoint()
-        var = self.current_scope().get_var_from_id(self.current_id())
         if attr_id is None:
             self.__current_attribute = attr_id
-        elif type(var.value()) is dict:
+            return
+        var = self.current_scope().get_var_from_id(self.current_id())
+        if type(var.value()) is dict:
+            var = self.current_scope().get_var_from_id(self.current_id())
             if attr_id in var.value():
                 self.__current_attribute = attr_id
         else:
@@ -374,7 +377,10 @@ class SymbolTable:
                 raise Exception(
                     f"types dont match, cant assign var {var.name()} attr type = {current_attribute_type}, current result type = {type(self.current_result())} ")
         else:
-            var_id = target[:target.find('[')]
+            if '[' in target:
+                var_id = target[:target.find('[')]
+            else:
+                var_id = target
             # checks for matrix
             if '][' in target:
                 rows = int(target[target.find('[')+1:target.find(']')])
