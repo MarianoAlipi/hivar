@@ -1,4 +1,5 @@
 from collections import deque
+from structures.stack import Stack
 
 ##########################
 ## internal use classes ##
@@ -6,12 +7,10 @@ from collections import deque
 
 
 class Variable:
-    def __init__(self, name, var_type, rows=1, cols=1):
+    def __init__(self, name, var_type):
         self.__name = name
         self.__type = var_type
         self.__value = None
-        self.__rows = rows
-        self.__cols = cols
 
     def name(self):
         return self.__name
@@ -21,12 +20,6 @@ class Variable:
 
     def value(self):
         return self.__value
-
-    def rows(self):
-        return self.__rows
-
-    def cols(self):
-        return self.__cols
 
 
 class Function:
@@ -50,6 +43,8 @@ class Scope:
         self.__funcs = {}
         self.__vars = {}
         self.__scopes = {}
+        self.__parent = None
+        self.__attributes = []
 
     def funcs(self):
         return self.__funcs
@@ -60,15 +55,28 @@ class Scope:
     def scopes(self):
         return self.__scopes
 
+    def parent(self):
+        return self.__parent
+
+    def set_parent(self, parent):
+        self.__parent = parent
+
+    def attributes(self):
+        return self.__attributes
+
     def func(self, func_name):
         if func_name in self.funcs():
             return self.funcs()[func_name]
-        return None
+        else:
+            raise Exception(
+                f'Function "{func_name}" not found')
 
     def var(self, var_name):
         if var_name in self.vars():
             return self.vars()[var_name]
-        return None
+        else:
+            raise Exception(
+                f'Variable "{var_name}" not found')
 
     def add_func(self, new_name, func_type=None):
         if new_name in self.funcs():
@@ -77,11 +85,33 @@ class Scope:
         self.__funcs[new_name] = Function(new_name, func_type)
         return self.__funcs[new_name]
 
-    def add_var(self, new_name, var_type=None, rows=1, cols=1):
+    def add_var(self, new_name, var_type=None):
         if new_name in self.vars():
             raise Exception(
                 f'Variable "{new_name}" is already declared in this scope')
-        self.__vars[new_name] = Variable(new_name, var_type, rows, cols)
+        self.__vars[new_name] = Variable(new_name, var_type)
+
+    def get_var_from_id(self, var_id):
+        if var_id in self.vars():
+            return self.vars()[var_id]
+        else:
+            parent_scope = self.parent()
+            if parent_scope:
+                var = parent_scope.get_var_from_id(var_id)
+                if var:
+                    return var
+                return None
+            else:
+                breakpoint()
+                raise Exception(
+                    f'Can not find variable "{var_id}"')
+
+    def add_attribute(self, attr):
+        self.__attributes.append(attr)
+
+    def set_vars_as_attrs(self):
+        for var in self.vars():
+            self.add_attribute(var)
 
 ##########################
 ## external use classes ##
@@ -109,7 +139,21 @@ class SymbolTable:
         return self.__scope_stack
 
     def set_curr_type(self, new_type):
-        self.__current_type = new_type
+        def is_valid():
+            if new_type == 'int' or new_type == 'float' or new_type == 'char':
+                return True
+            if new_type in self.classes():
+                return True
+            #valid in functions
+            if new_type == 'void':
+                return True
+            return False
+
+        if is_valid():
+            self.__current_type = new_type
+        else:
+            breakpoint()
+            raise Exception(f"Invalid type: {new_type}")
 
     def current_type(self):
         return self.__current_type
@@ -126,32 +170,11 @@ class SymbolTable:
     def set_last_saved_func(self, saved_func):
         self.__last_saved_func = saved_func
 
-    def set_curr_rows(self):
-        self.__current_rows = self.val()
-
-    def current_rows(self):
-        return self.__current_rows
-
-    def set_curr_cols(self):
-        self.__current_cols = self.val()
-
-    def current_cols(self):
-        return self.__current_cols
-
-    def set_rows_cols_to_none(self):
-        self.__current_cols = None
-        self.__current_rows = None
-
     def save_var(self):
-        if self.current_rows():
-            if self.current_cols():
-                self.current_scope().add_var(self.current_id(), self.current_type(),
-                                             self.current_rows(), self.current_cols())
-            else:
-                self.current_scope().add_var(self.current_id(),
-                                             self.current_type(), self.current_rows())
-        else:
-            self.current_scope().add_var(self.current_id(), self.current_type())
+        self.current_scope().add_var(self.current_id(), self.current_type())
+
+    def save_temp_var(self, name, var_type):
+        self.current_scope().add_var(name, var_type)
 
     def save_func(self):
         scope = self.current_scope()
@@ -163,20 +186,45 @@ class SymbolTable:
         self.last_saved_func().params().append(param)
         self.current_scope().add_var(self.current_id(), self.current_type())
 
-    def set_val(self, new_val):
-        self.__val = new_val
-
-    def val(self):
-        return self.__val
-
     def push_scope(self):
         name = self.current_id()
         scope_obj = Scope()
+        scope_obj.set_parent(self.current_scope())
         self.current_scope().scopes()[name] = scope_obj
         self.scope_stack().append((name, scope_obj))
 
     def pop_scope(self):
         self.scope_stack().pop()
+
+    def constant_sign(self):
+        return self.__constant_sign
+
+    def set_constant_sign(self, new_sign):
+        self.__constant_sign = new_sign
+
+    def quads(self):
+        return self.__quads
+
+    def classes(self):
+        return self.__classes
+
+    def add_class(self, class_name):
+        return self.__classes.append(class_name)
+
+    def t_counter(self):
+        return self.__t_counter
+
+    def add_to_counter(self):
+        self.__t_counter += 1
+
+    def operands(self):
+        return self.__operands
+
+    def op_types(self):
+        return self.__op_types
+
+    def operators(self):
+        return self.__operators
 
     def __init__(self):
         if SymbolTable.__instance:
@@ -191,4 +239,10 @@ class SymbolTable:
             self.__last_saved_func = None
             self.__current_rows = None
             self.__current_cols = None
-            self.__val = None
+            self.__constant_sign = '+'
+            self.__operands = Stack()
+            self.__op_types = Stack()
+            self.__operators = Stack()
+            self.__quads = []
+            self.__classes = []
+            self.__t_counter = 0

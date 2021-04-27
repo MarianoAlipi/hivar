@@ -8,8 +8,11 @@ A00822247
 
 from ply import lex
 from ply import yacc
-from symbol_table import SymbolTable
+from structures.symbol_table import SymbolTable, Variable
+from utils.semantics import match_operators
+from structures.quadruples import Quad
 from reserved import reserved, tokens
+
 
 # Regular expression rules for simple tokens.
 t_COMMA = r','
@@ -99,10 +102,19 @@ def p_program(p):
 
 def p_classes(p):
     '''
-    classes : CLASS_KEYWORD ID save_id push_scope inheritance LEFT_CURLY attributes methods RIGHT_CURLY pop_scope SEMICOLON classes
+    classes : CLASS_KEYWORD ID save_class push_scope inheritance LEFT_CURLY attributes methods RIGHT_CURLY pop_scope SEMICOLON classes
             | empty
     '''
     p[0] = tuple(p[1:])
+
+
+def p_save_class(p):
+    '''
+    save_class :
+    '''
+    st = SymbolTable.get()
+    st.set_curr_id(p[-1])
+    st.add_class(p[-1])
 
 
 def p_inheritance(p):
@@ -115,10 +127,18 @@ def p_inheritance(p):
 
 def p_attributes(p):
     '''
-    attributes : ATTRIBUTES_KEYWORD vars_1
+    attributes : ATTRIBUTES_KEYWORD vars_1 set_vars_as_attrs
                | empty
     '''
     p[0] = tuple(p[1:])
+
+
+def p_set_vars_as_attrs(p):
+    '''
+    set_vars_as_attrs :
+    '''
+    st = SymbolTable.get()
+    st.current_scope().set_vars_as_attrs()
 
 
 def p_methods(p):
@@ -147,7 +167,7 @@ def p_vars_1(p):
 
 def p_vars_arr(p):
     '''
-    vars_arr : init_arr LEFT_BRACKET vars_arr_1 RIGHT_BRACKET
+    vars_arr : LEFT_BRACKET vars_arr_1 RIGHT_BRACKET
              | empty
     '''
     p[0] = tuple(p[1:])
@@ -155,8 +175,8 @@ def p_vars_arr(p):
 
 def p_vars_arr_1(p):
     '''
-    vars_arr_1 : vars_arr_2 set_val save_rows COMMA vars_arr_2 set_val save_cols
-               | vars_arr_2 set_val save_rows
+    vars_arr_1 : vars_arr_2 COMMA vars_arr_2
+               | vars_arr_2
     '''
     p[0] = tuple(p[1:])
 
@@ -290,15 +310,27 @@ def p_assignment(p):
                | variable EQUALS_ASSIGNMENT func_call
     '''
     p[0] = tuple(p[1:])
+    # TODO assignment
 
 
 def p_variable(p):
     '''
     variable : ID LEFT_BRACKET exp COMMA exp RIGHT_BRACKET
              | ID PERIOD ID
-             | ID
+             | ID set_var_as_curr
     '''
     p[0] = tuple(p[1:])
+
+
+def p_set_var_as_curr(p):
+    '''
+    set_var_as_curr :
+    '''
+    st = SymbolTable.get()
+    # start always by setting to none, the logic will check if these exists and act accordingly
+    curr_var = st.current_scope().get_var_from_id(p[-1])
+    st.set_curr_id(p[-1])
+    st.set_curr_type(curr_var.var_type())
 
 
 def p_expression(p):
@@ -325,40 +357,135 @@ def p_relational_op(p):
 
 def p_exp(p):
     '''
-    exp : term PLUS exp
-        | term MINUS exp
-        | term
+    exp : term eval_exp PLUS push_operator exp
+        | term eval_exp MINUS push_operator exp
+        | term eval_exp
     '''
+    # TODO checar si algo al final de la 3era op
     p[0] = tuple(p[1:])
+
+
+def p_eval_exp(p):
+    '''
+    eval_exp :
+    '''
+    st = SymbolTable.get()
+    if st.operators().top() == '+' or st.operators().top() == '-':
+        eval_exp_or_term(st)
+
+
+def eval_exp_or_term(st):
+    right_op = st.operands().pop()
+    right_type = st.op_types().pop()
+    left_op = st.operands().pop()
+    left_type = st.op_types().pop()
+    operator = st.operators().pop()
+    res_type = match_operators(left_type, right_type, operator)
+
+    # ???
+    temp_var_name = f't_{st.t_counter()}'
+    st.add_to_counter()
+    st.save_temp_var(temp_var_name, res_type)
+
+    quad = Quad(operator, left_op, right_op, temp_var_name)
+
+    st.quads().append(quad)
+    st.operands().push(temp_var_name)
+    st.op_types().push(res_type)
 
 
 def p_term(p):
     '''
-    term : factor MULTIPLY factor
-         | factor DIVIDE factor
-         | factor
+    term : factor eval_term MULTIPLY push_operator factor
+         | factor eval_term DIVIDE push_operator factor
+         | factor eval_term
     '''
     p[0] = tuple(p[1:])
+
+
+def p_eval_term(p):
+    '''
+    eval_term :
+    '''
+    st = SymbolTable.get()
+    if st.operators().top() == '*' or st.operators().top() == '/':
+        eval_exp_or_term(st)
+
+
+def p_push_operator(p):
+    '''
+    push_operator :
+    '''
+    op = p[-1]
+    st = SymbolTable.get()
+    st.operators().push(op)
 
 
 def p_factor(p):
     '''
-    factor : LEFT_PARENTHESIS expression RIGHT_PARENTHESIS
-           | constant
-           | variable
-           | func_call
-           | PLUS constant
-           | MINUS constant
+    factor : LEFT_PARENTHESIS expression RIGHT_PARENTHESIS save_operand
+           | constant save_operand
+           | variable save_operand
+           | func_call save_operand
+           | PLUS set_constant_sign constant save_operand
+           | MINUS set_constant_sign constant save_operand
     '''
     p[0] = tuple(p[1:])
 
 
+def p_save_operand(p):
+    '''
+    save_operand :
+    '''
+    st = SymbolTable.get()
+    st.operands().push(st.current_id())
+    st.op_types().push(st.current_type())
+
+
+def p_set_constant_sign(p):
+    '''
+    set_constant_sign : 
+    '''
+    st = SymbolTable.get()
+    st.curr_constant_sign = p[-1]
+
+
 def p_constant(p):
     '''
-    constant : CONST_INT
-             | CONST_FLOAT
+    constant : CONST_INT save_int_var_as_current
+             | CONST_FLOAT save_float_var_as_current
     '''
     p[0] = p[1]
+
+
+def p_save_int_var_as_current(p):
+    '''
+    save_int_var_as_current : 
+    '''
+    st = SymbolTable.get()
+    st.set_curr_type('int')
+    st.set_curr_id(p[-1])
+
+    if st.constant_sign() == '-':
+        st.set_curr_id(p[-1] * -1)
+    else:
+        st.set_curr_id(p[-1])
+    st.set_constant_sign('+')
+
+
+def p_save_float_var_as_current(p):
+    '''
+    save_float_var_as_current : 
+    '''
+    st = SymbolTable.get()
+    st.set_curr_type('float')
+    st.set_curr_id(p[-1])
+
+    if st.constant_sign() == '-':
+        st.set_curr_id(p[-1] * -1)
+    else:
+        st.set_curr_id(p[-1])
+    st.set_constant_sign('+')
 
 
 def p_func_call(p):
@@ -532,22 +659,6 @@ def p_save_func(p):
     st.save_func()
 
 
-def p_save_rows(p):
-    '''
-    save_rows :
-    '''
-    st = SymbolTable.get()
-    st.set_curr_rows()
-
-
-def p_save_cols(p):
-    '''
-    save_cols :
-    '''
-    st = SymbolTable.get()
-    st.set_curr_cols()
-
-
 def p_push_scope(p):
     '''
     push_scope :
@@ -570,22 +681,6 @@ def p_save_parameter(p):
     '''
     st = SymbolTable.get()
     st.save_parameter()
-
-
-def p_set_val(p):
-    '''
-    set_val :
-    '''
-    st = SymbolTable.get()
-    st.set_val(p[-1])
-
-
-def p_init_arr(p):
-    '''
-    init_arr :
-    '''
-    st = SymbolTable.get()
-    st.set_rows_cols_to_none()
 
 
 # Build the lexer and parser.

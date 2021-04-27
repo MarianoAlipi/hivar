@@ -1,6 +1,6 @@
 from lexer_parser import lexer, parser
 from file_manager import get_file_content
-from symbol_table import SymbolTable
+from structures.symbol_table import SymbolTable
 
 DEBUG_MODE = 0
 
