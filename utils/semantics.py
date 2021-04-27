@@ -12,6 +12,7 @@ def match_operators(left_op, right_op, operator):
             raise Exception("operator types did not match")
         return res
     except Exception as err:
+        breakpoint()
         raise Exception(
             'Problem while checking types, the operands probably do not exist. '
             f'left_op: {left_op}, right_op: {right_op}, operator: {operator}. Error: {err}')

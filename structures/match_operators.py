@@ -28,6 +28,7 @@ def get_cube():
     cube[INT][INT][plus] = INT
     cube[INT][INT][minus] = INT
     cube[INT][INT][div] = INT
+    cube[INT][INT][mult] = INT
     cube[INT][INT][andop] = ERR
     cube[INT][INT][orop] = ERR
     cube[INT][INT][morethan] = BOOL
@@ -39,6 +40,7 @@ def get_cube():
     cube[INT][FLOAT][plus] = FLOAT
     cube[INT][FLOAT][minus] = FLOAT
     cube[INT][FLOAT][div] = FLOAT
+    cube[INT][FLOAT][mult] = FLOAT
     cube[INT][FLOAT][andop] = ERR
     cube[INT][FLOAT][orop] = ERR
     cube[INT][FLOAT][morethan] = BOOL
@@ -50,6 +52,7 @@ def get_cube():
     cube[INT][CHAR][plus] = ERR
     cube[INT][CHAR][minus] = ERR
     cube[INT][CHAR][div] = ERR
+    cube[INT][CHAR][mult] = ERR
     cube[INT][CHAR][andop] = ERR
     cube[INT][CHAR][orop] = ERR
     cube[INT][CHAR][morethan] = ERR
@@ -61,6 +64,7 @@ def get_cube():
     cube[INT][BOOL][plus] = ERR
     cube[INT][BOOL][minus] = ERR
     cube[INT][BOOL][div] = ERR
+    cube[INT][BOOL][mult] = ERR
     cube[INT][BOOL][andop] = ERR
     cube[INT][BOOL][orop] = ERR
     cube[INT][BOOL][morethan] = ERR
@@ -80,6 +84,7 @@ def get_cube():
     cube[FLOAT][INT][plus] = FLOAT
     cube[FLOAT][INT][minus] = FLOAT
     cube[FLOAT][INT][div] = FLOAT
+    cube[FLOAT][INT][mult] = FLOAT
     cube[FLOAT][INT][andop] = ERR
     cube[FLOAT][INT][orop] = ERR
     cube[FLOAT][INT][morethan] = BOOL
@@ -91,6 +96,7 @@ def get_cube():
     cube[FLOAT][FLOAT][plus] = FLOAT
     cube[FLOAT][FLOAT][minus] = FLOAT
     cube[FLOAT][FLOAT][div] = FLOAT
+    cube[FLOAT][FLOAT][mult] = FLOAT
     cube[FLOAT][FLOAT][andop] = ERR
     cube[FLOAT][FLOAT][orop] = ERR
     cube[FLOAT][FLOAT][morethan] = BOOL
@@ -102,6 +108,7 @@ def get_cube():
     cube[FLOAT][CHAR][plus] = ERR
     cube[FLOAT][CHAR][minus] = ERR
     cube[FLOAT][CHAR][div] = ERR
+    cube[FLOAT][CHAR][mult] = ERR
     cube[FLOAT][CHAR][andop] = ERR
     cube[FLOAT][CHAR][orop] = ERR
     cube[FLOAT][CHAR][morethan] = ERR
@@ -113,6 +120,7 @@ def get_cube():
     cube[FLOAT][BOOL][plus] = ERR
     cube[FLOAT][BOOL][minus] = ERR
     cube[FLOAT][BOOL][div] = ERR
+    cube[FLOAT][BOOL][mult] = ERR
     cube[FLOAT][BOOL][andop] = ERR
     cube[FLOAT][BOOL][orop] = ERR
     cube[FLOAT][BOOL][morethan] = ERR
@@ -130,6 +138,7 @@ def get_cube():
     cube[CHAR][INT][plus] = ERR
     cube[CHAR][INT][minus] = ERR
     cube[CHAR][INT][div] = ERR
+    cube[CHAR][INT][mult] = ERR
     cube[CHAR][INT][andop] = ERR
     cube[CHAR][INT][orop] = ERR
     cube[CHAR][INT][morethan] = ERR
@@ -141,6 +150,7 @@ def get_cube():
     cube[CHAR][FLOAT][plus] = ERR
     cube[CHAR][FLOAT][minus] = ERR
     cube[CHAR][FLOAT][div] = ERR
+    cube[CHAR][FLOAT][mult] = ERR
     cube[CHAR][FLOAT][andop] = ERR
     cube[CHAR][FLOAT][orop] = ERR
     cube[CHAR][FLOAT][morethan] = ERR
@@ -152,6 +162,7 @@ def get_cube():
     cube[CHAR][CHAR][plus] = ERR
     cube[CHAR][CHAR][minus] = ERR
     cube[CHAR][CHAR][div] = ERR
+    cube[CHAR][CHAR][mult] = ERR
     cube[CHAR][CHAR][andop] = ERR
     cube[CHAR][CHAR][orop] = ERR
     cube[CHAR][CHAR][morethan] = ERR
@@ -163,6 +174,7 @@ def get_cube():
     cube[CHAR][BOOL][plus] = ERR
     cube[CHAR][BOOL][minus] = ERR
     cube[CHAR][BOOL][div] = ERR
+    cube[CHAR][BOOL][mult] = ERR
     cube[CHAR][BOOL][andop] = ERR
     cube[CHAR][BOOL][orop] = ERR
     cube[CHAR][BOOL][morethan] = ERR
@@ -180,6 +192,7 @@ def get_cube():
     cube[BOOL][INT][plus] = ERR
     cube[BOOL][INT][minus] = ERR
     cube[BOOL][INT][div] = ERR
+    cube[BOOL][INT][mult] = ERR
     cube[BOOL][INT][andop] = ERR
     cube[BOOL][INT][orop] = ERR
     cube[BOOL][INT][morethan] = ERR
@@ -191,6 +204,7 @@ def get_cube():
     cube[BOOL][FLOAT][plus] = ERR
     cube[BOOL][FLOAT][minus] = ERR
     cube[BOOL][FLOAT][div] = ERR
+    cube[BOOL][FLOAT][mult] = ERR
     cube[BOOL][FLOAT][andop] = ERR
     cube[BOOL][FLOAT][orop] = ERR
     cube[BOOL][FLOAT][morethan] = ERR
@@ -202,6 +216,7 @@ def get_cube():
     cube[BOOL][CHAR][plus] = ERR
     cube[BOOL][CHAR][minus] = ERR
     cube[BOOL][CHAR][div] = ERR
+    cube[BOOL][CHAR][mult] = ERR
     cube[BOOL][CHAR][andop] = ERR
     cube[BOOL][CHAR][orop] = ERR
     cube[BOOL][CHAR][morethan] = ERR
@@ -213,6 +228,7 @@ def get_cube():
     cube[BOOL][BOOL][plus] = ERR
     cube[BOOL][BOOL][minus] = ERR
     cube[BOOL][BOOL][div] = ERR
+    cube[BOOL][BOOL][mult] = ERR
     cube[BOOL][BOOL][andop] = BOOL
     cube[BOOL][BOOL][orop] = BOOL
     cube[BOOL][BOOL][morethan] = ERR

@@ -29,6 +29,9 @@ class Variable:
         # value is a single value inside a [[]] or a dict in case of objects
         return self.__value[rows][cols]
 
+    def values(self, rows=0, cols=0):
+        return self.__value
+
     def rows(self):
         return self.__rows
 
@@ -36,7 +39,13 @@ class Variable:
         return self.__cols
 
     def set_value(self, new_val, rows=0, cols=0):
-        self.__value[rows][cols] = new_val
+        try:
+            if rows == 0:
+                self.__value[rows][cols] = new_val
+            else:
+                self.values()[rows-1][cols-1] = new_val
+        except:
+            breakpoint()
 
     def set_attr_value(self, attr, new_val, rows=0, cols=0):
         try:
@@ -67,6 +76,7 @@ class Scope:
         self.__vars = {}
         self.__scopes = {}
         self.__attributes = []
+        self.__parent = None
 
     def funcs(self):
         return self.__funcs
@@ -111,17 +121,28 @@ class Scope:
         self.__attributes.append(attr)
 
     def get_var_from_id(self, var_id):
-        breakpoint()
         if var_id in self.vars():
             return self.vars()[var_id]
         else:
-            # TODO: busca más arriba
-            raise Exception(
-                f'Can not find variable "{var_id}"')
+            parent_scope = self.parent()
+            if parent_scope:
+                var = parent_scope.get_var_from_id(var_id)
+                if var:
+                    return var
+                return None
+            else:
+                raise Exception(
+                    f'Can not find variable "{var_id}"')
 
     def set_vars_as_attrs(self):
         for var in self.vars():
             self.add_attribute(var)
+
+    def parent(self):
+        return self.__parent
+
+    def set_parent(self, parent):
+        self.__parent = parent
 
 
 ##########################
@@ -163,6 +184,7 @@ class SymbolTable:
         if is_valid():
             self.__current_type = new_type
         else:
+            breakpoint()
             raise Exception(f"Invalid type: {new_type}")
 
     def current_type(self):
@@ -231,9 +253,12 @@ class SymbolTable:
             # if its an array init all the objects
             if self.current_rows():
                 if self.current_cols():
-                    for r in range(self.current_rows()):
-                        for c in range(self.current_cols()):
-                            var.set_value(attrs, r, c)
+                    for ra in range(self.current_rows()):
+                        print(f'for ra={ra}')
+                        for co in range(self.current_cols()):
+                            print(f'for co={co}')
+                            var.set_value(attrs, ra, co)
+
                 else:
                     for r in range(self.current_rows()):
                         var.set_value(attrs, r)
@@ -259,6 +284,7 @@ class SymbolTable:
     def push_scope(self):
         name = self.current_id()
         scope_obj = Scope()
+        scope_obj.set_parent(self.current_scope())
         self.current_scope().scopes()[name] = scope_obj
         self.scope_stack().append((name, scope_obj))
 
@@ -307,7 +333,6 @@ class SymbolTable:
         return self.__current_result
 
     def set_current_result(self, res):
-        breakpoint()
         self.__current_result = res
 
     def current_attribute_id(self):
@@ -345,6 +370,7 @@ class SymbolTable:
             if current_attribute_type == type(self.current_result()):
                 var.set_attr_value(attr, self.current_result(), rows, cols)
             else:
+                breakpoint()
                 raise Exception(
                     f"types dont match, cant assign var {var.name()} attr type = {current_attribute_type}, current result type = {type(self.current_result())} ")
         else:
@@ -356,11 +382,19 @@ class SymbolTable:
             elif '[' in target:
                 rows = int(target[target.find('[')+1:-1])
             var = self.current_scope().get_var_from_id(var_id)
-            if var.var_type() == type(self.current_result()):
+            result_var = self.current_scope().get_var_from_id(self.current_result())
+            if var.var_type() == result_var.var_type():
                 var.set_value(self.current_result(), rows, cols)
             else:
+                breakpoint()
                 raise Exception(
                     f"types dont match, cant assign var {var.name()} type = {var.var_type()}, current result type = {type(self.current_result())} ")
+
+    def t_counter(self):
+        return self.__t_counter
+
+    def add_to_counter(self, res):
+        self.__t_counter += 1
 
     def __init__(self):
         if SymbolTable.__instance:
@@ -385,3 +419,4 @@ class SymbolTable:
             self.__var_to_assign = None
             self.__current_result = None
             self.__current_attribute = None
+            self.__t_counter = 0

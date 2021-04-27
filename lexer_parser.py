@@ -41,8 +41,9 @@ t_AND = r'&&'
 t_OR = r'\|\|'
 t_ignore = r' '
 
-
 # Regular expression rules for complex tokens.
+
+
 def t_ID(t):
     r'[a-zA-Z][a-zA-Z0-9_]*'
     # The second argument ('ID') is a default value
@@ -103,10 +104,19 @@ def p_program(p):
 
 def p_classes(p):
     '''
-    classes : CLASS_KEYWORD ID save_id push_scope inheritance LEFT_CURLY attributes methods RIGHT_CURLY pop_scope SEMICOLON classes
+    classes : CLASS_KEYWORD ID save_class push_scope inheritance LEFT_CURLY attributes methods RIGHT_CURLY pop_scope SEMICOLON classes
             | empty
     '''
     p[0] = tuple(p[1:])
+
+
+def p_save_class(p):
+    '''
+    save_class :
+    '''
+    st = SymbolTable.get()
+    st.set_curr_id(p[-1])
+    st.add_class(p[-1])
 
 
 def p_inheritance(p):
@@ -389,12 +399,13 @@ def p_eval_exp(p):
         right_type = st.op_types().pop()
         left_op = st.operands().pop()
         left_type = st.op_types().pop()
-        operator = st.operands().pop()
+        operator = st.operators().pop()
         res_type = match_operators(left_type, right_type, operator)
-        quad = Quad(operator, left_op, right_op, None)
-        quad = solve_quad(quad)
+        result = f't_{st.t_counter()}'
+        st.add_to_counter
+        quad = Quad(operator, left_op, right_op, result)
         st.quads().push(quad)
-        st.operands().push(quad.result())
+        st.operands().push(result)
         st.op_types().push(res_type)
 
 
@@ -429,16 +440,18 @@ def p_eval_term(p):
     '''
     st = SymbolTable.get()
     if st.operators().top() == '*' or st.operators().top() == '/':
+
         right_op = st.operands().pop()
         right_type = st.op_types().pop()
         left_op = st.operands().pop()
         left_type = st.op_types().pop()
-        operator = st.operands().pop()
+        operator = st.operators().pop()
         res_type = match_operators(left_type, right_type, operator)
-        quad = Quad(operator, left_op, right_op, None)
-        quad = solve_quad(quad)
+        result = f't_{st.t_counter()}'
+        st.add_to_counter
+        quad = Quad(operator, left_op, right_op, result)
         st.quads().push(quad)
-        st.operands().push(quad.result())
+        st.operands().push(result)
         st.op_types().push(res_type)
 
 
