@@ -15,5 +15,5 @@ except SyntaxError as e:
     print(f'Syntax error: unexpected {e.args[0]}')
 
 if DEBUG_MODE:
-    st = SymbolTable()
+    st = SymbolTable.get()
     breakpoint()

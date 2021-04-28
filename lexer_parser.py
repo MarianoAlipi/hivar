@@ -361,7 +361,6 @@ def p_exp(p):
         | term eval_exp MINUS push_operator exp
         | term eval_exp
     '''
-    # TODO checar si algo al final de la 3era op
     p[0] = tuple(p[1:])
 
 
@@ -375,15 +374,20 @@ def p_eval_exp(p):
 
 
 def eval_exp_or_term(st):
+    # TODO fondos falsos
+    # creo que es de if top == ')' exp otravez?
+
     right_op = st.operands().pop()
     right_type = st.op_types().pop()
     left_op = st.operands().pop()
     left_type = st.op_types().pop()
     operator = st.operators().pop()
-    res_type = match_operators(left_type, right_type, operator)
+    if operator == '(' or operator == ')':
+        breakpoint()
 
-    # ???
+    res_type = match_operators(left_type, right_type, operator)
     temp_var_name = f't_{st.t_counter()}'
+    print(f'{left_op}.{left_type} {operator} {right_op}.{right_type} = {temp_var_name}.{res_type}')
     st.add_to_counter()
     st.save_temp_var(temp_var_name, res_type)
 
@@ -396,8 +400,8 @@ def eval_exp_or_term(st):
 
 def p_term(p):
     '''
-    term : factor eval_term MULTIPLY push_operator factor
-         | factor eval_term DIVIDE push_operator factor
+    term : factor eval_term MULTIPLY push_operator term
+         | factor eval_term DIVIDE push_operator term
          | factor eval_term
     '''
     p[0] = tuple(p[1:])
@@ -422,8 +426,9 @@ def p_push_operator(p):
 
 
 def p_factor(p):
+    # TODO add logic after getting fake ceiling
     '''
-    factor : LEFT_PARENTHESIS expression RIGHT_PARENTHESIS save_operand
+    factor : LEFT_PARENTHESIS push_operator expression RIGHT_PARENTHESIS push_operator save_operand
            | constant save_operand
            | variable save_operand
            | func_call save_operand

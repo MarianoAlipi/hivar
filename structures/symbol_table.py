@@ -226,6 +226,12 @@ class SymbolTable:
     def operators(self):
         return self.__operators
 
+    def print_quads(self):
+        quads = self.quads()
+        for quad in quads:
+            print(quad.operator(), quad.left_op(),
+                  quad.right_op(), quad.result())
+
     def __init__(self):
         if SymbolTable.__instance:
             raise Exception(
