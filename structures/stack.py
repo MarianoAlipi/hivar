@@ -24,7 +24,10 @@ class Stack:
 
     def pop(self):
         if valid(self):
-            return self.__stack.pop()
+            element = self.__stack.pop()
+            if element == '+' or element == '-' or element == '*' or element == '/':
+                print(element)
+            return element
 
     def top(self):
         if is_empty(self):

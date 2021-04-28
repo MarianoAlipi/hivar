@@ -232,6 +232,12 @@ class SymbolTable:
             print(quad.operator(), quad.left_op(),
                   quad.right_op(), quad.result())
 
+    def var_to_assign(self):
+        return self.__var_to_assign
+
+    def set_var_to_assign(self, new_var):
+        self.__var_to_assign = new_var
+
     def __init__(self):
         if SymbolTable.__instance:
             raise Exception(
@@ -243,8 +249,6 @@ class SymbolTable:
             self.__current_type = None
             self.__current_id = None
             self.__last_saved_func = None
-            self.__current_rows = None
-            self.__current_cols = None
             self.__constant_sign = '+'
             self.__operands = Stack()
             self.__op_types = Stack()
@@ -252,3 +256,4 @@ class SymbolTable:
             self.__quads = []
             self.__classes = []
             self.__t_counter = 0
+            self.__var_to_assign = None

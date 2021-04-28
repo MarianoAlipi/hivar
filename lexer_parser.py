@@ -306,11 +306,45 @@ def p_statement_1(p):
 
 def p_assignment(p):
     '''
-    assignment : variable EQUALS_ASSIGNMENT exp
-               | variable EQUALS_ASSIGNMENT func_call
+    assignment : variable set_var_to_assign EQUALS_ASSIGNMENT exp assign_to_var
+               | variable set_var_to_assign EQUALS_ASSIGNMENT func_call 
     '''
     p[0] = tuple(p[1:])
-    # TODO assignment
+    # TODO assignment with func_call
+
+
+def p_assign_to_var(p):
+    '''
+    assign_to_var :
+    '''
+    # TODO dis
+    st = SymbolTable.get()
+    right_op = st.operands().pop()
+    right_type = st.op_types().pop()
+    left_op = st.operands().pop()
+    left_type = st.op_types().pop()
+    breakpoint()
+    operator = st.operators().pop()
+
+    res_type = match_operators(left_type, right_type, operator)
+    temp_var_name = f't_{st.t_counter()}'
+    #print(f'{left_op}.{left_type} {operator} {right_op}.{right_type} = {temp_var_name}.{res_type}')
+    st.add_to_counter()
+    st.save_temp_var(temp_var_name, res_type)
+
+    quad = Quad(operator, left_op, right_op, temp_var_name)
+
+    st.quads().append(quad)
+    st.operands().push(temp_var_name)
+    st.op_types().push(res_type)
+
+
+def p_set_var_to_assign(p):
+    '''
+    set_var_to_assign :
+    '''
+    st = SymbolTable.get()
+    st.set_var_to_assign(p[-1])
 
 
 def p_variable(p):
@@ -374,20 +408,15 @@ def p_eval_exp(p):
 
 
 def eval_exp_or_term(st):
-    # TODO fondos falsos
-    # creo que es de if top == ')' exp otravez?
-
     right_op = st.operands().pop()
     right_type = st.op_types().pop()
     left_op = st.operands().pop()
     left_type = st.op_types().pop()
     operator = st.operators().pop()
-    if operator == '(' or operator == ')':
-        breakpoint()
 
     res_type = match_operators(left_type, right_type, operator)
     temp_var_name = f't_{st.t_counter()}'
-    print(f'{left_op}.{left_type} {operator} {right_op}.{right_type} = {temp_var_name}.{res_type}')
+    #print(f'{left_op}.{left_type} {operator} {right_op}.{right_type} = {temp_var_name}.{res_type}')
     st.add_to_counter()
     st.save_temp_var(temp_var_name, res_type)
 
@@ -421,14 +450,24 @@ def p_push_operator(p):
     push_operator :
     '''
     op = p[-1]
+    if op == '(':
+        breakpoint()
     st = SymbolTable.get()
     st.operators().push(op)
+
+
+def p_pop_operator(p):
+    '''
+    pop_operator :
+    '''
+    st = SymbolTable.get()
+    st.operators().pop()
 
 
 def p_factor(p):
     # TODO add logic after getting fake ceiling
     '''
-    factor : LEFT_PARENTHESIS push_operator expression RIGHT_PARENTHESIS push_operator save_operand
+    factor : LEFT_PARENTHESIS push_operator expression RIGHT_PARENTHESIS save_operand
            | constant save_operand
            | variable save_operand
            | func_call save_operand
