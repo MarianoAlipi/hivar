@@ -226,6 +226,29 @@ class SymbolTable:
     def operators(self):
         return self.__operators
 
+    # These are stacks of stacks.
+    # When a ( is pushed, the current stacks
+    # are saved into these.
+    # When ) is found, the previous stacks
+    # are retrieved by popping these.
+    def operands_stacks(self):
+        return self.__operands_stacks
+
+    def types_stacks(self):
+        return self.__types_stacks
+
+    def operators_stacks(self):
+        return self.__operators_stacks
+
+    def set_operands(self, val):
+        self.__operands = val
+
+    def set_types(self, val):
+        self.__op_types = val
+
+    def set_operators(self, val):
+        self.__operators = val
+
     def print_quads(self):
         quads = self.quads()
         for quad in quads:
@@ -253,6 +276,9 @@ class SymbolTable:
             self.__operands = Stack()
             self.__op_types = Stack()
             self.__operators = Stack()
+            self.__operands_stacks = Stack()
+            self.__types_stacks = Stack()
+            self.__operators_stacks = Stack()
             self.__quads = []
             self.__classes = []
             self.__t_counter = 0

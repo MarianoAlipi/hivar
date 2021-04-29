@@ -11,6 +11,7 @@ from ply import yacc
 from structures.symbol_table import SymbolTable, Variable
 from utils.semantics import match_operators
 from structures.quadruples import Quad
+from structures.stack import Stack
 from reserved import reserved, tokens
 
 
@@ -450,24 +451,52 @@ def p_push_operator(p):
     push_operator :
     '''
     op = p[-1]
-    if op == '(':
-        breakpoint()
     st = SymbolTable.get()
-    st.operators().push(op)
+    if op == '(':
+        st.operands_stacks().push(st.operands())
+        st.set_operands(Stack())
+
+        st.types_stacks().push(st.op_types())
+        st.set_types(Stack())
+
+        st.operators_stacks().push(st.operators())
+        st.set_operators(Stack())
+    else:
+        st.operators().push(op)
 
 
 def p_pop_operator(p):
     '''
     pop_operator :
     '''
+    op = p[-1]
     st = SymbolTable.get()
-    st.operators().pop()
+    if op == ')':
+        try:
+            prev_operands = st.operands_stacks().pop()
+            st.set_operands(prev_operands)
+        except:
+            st.set_operands(Stack())
+
+        try:
+            prev_types = st.types_stacks().pop()
+            st.set_types(prev_types)
+        except:
+            st.set_types(Stack())
+
+        try:
+            prev_operators = st.operators_stacks().pop()
+            st.set_operators(prev_operators)
+        except:
+            st.set_operators(Stack())
+    else:
+        st.operators().pop()
 
 
 def p_factor(p):
     # TODO add logic after getting fake ceiling
     '''
-    factor : LEFT_PARENTHESIS push_operator expression RIGHT_PARENTHESIS save_operand
+    factor : LEFT_PARENTHESIS push_operator expression RIGHT_PARENTHESIS pop_operator save_operand
            | constant save_operand
            | variable save_operand
            | func_call save_operand
