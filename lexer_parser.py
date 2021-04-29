@@ -318,26 +318,20 @@ def p_assign_to_var(p):
     '''
     assign_to_var :
     '''
-    # TODO dis
     st = SymbolTable.get()
-    right_op = st.operands().pop()
-    right_type = st.op_types().pop()
+    right_op = ''
     left_op = st.operands().pop()
     left_type = st.op_types().pop()
-    breakpoint()
-    operator = st.operators().pop()
+    operator = '='
+    res_var = st.var_to_assign()
+    res_var_type = st.current_scope().get_var_from_id(res_var).var_type()
+    if res_var_type != left_type:
+        raise Exception(
+            f'Problem while assigning var {res_var} types do not match.left_op: {left_op}, right_op: {right_op}, operator: {operator}. Error: {err}')
 
-    res_type = match_operators(left_type, right_type, operator)
-    temp_var_name = f't_{st.t_counter()}'
-    #print(f'{left_op}.{left_type} {operator} {right_op}.{right_type} = {temp_var_name}.{res_type}')
-    st.add_to_counter()
-    st.save_temp_var(temp_var_name, res_type)
-
-    quad = Quad(operator, left_op, right_op, temp_var_name)
+    quad = Quad(operator, left_op, right_op, res_var)
 
     st.quads().append(quad)
-    st.operands().push(temp_var_name)
-    st.op_types().push(res_type)
 
 
 def p_set_var_to_assign(p):
@@ -345,7 +339,10 @@ def p_set_var_to_assign(p):
     set_var_to_assign :
     '''
     st = SymbolTable.get()
-    st.set_var_to_assign(p[-1])
+    if type(p[-1]) == tuple:
+        st.set_var_to_assign(p[-1][0])
+    else:
+        st.set_var_to_assign(p[-1])
 
 
 def p_variable(p):
