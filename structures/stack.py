@@ -11,6 +11,42 @@ def is_empty(self):
     return False
 
 
+def push_operator(st, op):
+    if op == '(':
+        st.operands_stacks().push(st.operands())
+        st.set_operands(Stack())
+
+        st.types_stacks().push(st.op_types())
+        st.set_types(Stack())
+
+        st.operators_stacks().push(st.operators())
+        st.set_operators(Stack())
+    else:
+        st.operators().push(op)
+
+def pop_operator(st, op):
+    if op == ')':
+        try:
+            prev_operands = st.operands_stacks().pop()
+            st.set_operands(prev_operands)
+        except:
+            st.set_operands(Stack())
+
+        try:
+            prev_types = st.types_stacks().pop()
+            st.set_types(prev_types)
+        except:
+            st.set_types(Stack())
+
+        try:
+            prev_operators = st.operators_stacks().pop()
+            st.set_operators(prev_operators)
+        except:
+            st.set_operators(Stack())
+    else:
+        st.operators().pop()
+
+
 class Stack:
 
     def __init__(self):

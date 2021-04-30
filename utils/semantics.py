@@ -1,4 +1,4 @@
-from structures.match_operators import get_cube
+from structures.semantics_cube import get_cube
 ERR = 'err'
 
 

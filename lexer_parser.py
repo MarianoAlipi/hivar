@@ -9,9 +9,10 @@ A00822247
 from ply import lex
 from ply import yacc
 from structures.symbol_table import SymbolTable, Variable
+from utils.exp import eval_exp_or_term, assign_to_var
 from utils.semantics import match_operators
 from structures.quadruples import Quad
-from structures.stack import Stack
+from structures.stack import Stack, push_operator, pop_operator
 from reserved import reserved, tokens
 
 
@@ -319,19 +320,7 @@ def p_assign_to_var(p):
     assign_to_var :
     '''
     st = SymbolTable.get()
-    right_op = ''
-    left_op = st.operands().pop()
-    left_type = st.op_types().pop()
-    operator = '='
-    res_var = st.var_to_assign()
-    res_var_type = st.current_scope().get_var_from_id(res_var).var_type()
-    if res_var_type != left_type:
-        raise Exception(
-            f'Problem while assigning var {res_var} types do not match.left_op: {left_op}, right_op: {right_op}, operator: {operator}. Error: {err}')
-
-    quad = Quad(operator, left_op, right_op, res_var)
-
-    st.quads().append(quad)
+    assign_to_var(st)
 
 
 def p_set_var_to_assign(p):
@@ -404,27 +393,6 @@ def p_eval_exp(p):
     if st.operators().top() == '+' or st.operators().top() == '-':
         eval_exp_or_term(st)
 
-
-def eval_exp_or_term(st):
-    right_op = st.operands().pop()
-    right_type = st.op_types().pop()
-    left_op = st.operands().pop()
-    left_type = st.op_types().pop()
-    operator = st.operators().pop()
-
-    res_type = match_operators(left_type, right_type, operator)
-    temp_var_name = f't_{st.t_counter()}'
-    #print(f'{left_op}.{left_type} {operator} {right_op}.{right_type} = {temp_var_name}.{res_type}')
-    st.add_to_counter()
-    st.save_temp_var(temp_var_name, res_type)
-
-    quad = Quad(operator, left_op, right_op, temp_var_name)
-
-    st.quads().append(quad)
-    st.operands().push(temp_var_name)
-    st.op_types().push(res_type)
-
-
 def p_term(p):
     '''
     term : factor eval_term MULTIPLY push_operator term
@@ -447,51 +415,19 @@ def p_push_operator(p):
     '''
     push_operator :
     '''
-    op = p[-1]
     st = SymbolTable.get()
-    if op == '(':
-        st.operands_stacks().push(st.operands())
-        st.set_operands(Stack())
-
-        st.types_stacks().push(st.op_types())
-        st.set_types(Stack())
-
-        st.operators_stacks().push(st.operators())
-        st.set_operators(Stack())
-    else:
-        st.operators().push(op)
+    push_operator(st, p[-1])
 
 
 def p_pop_operator(p):
     '''
     pop_operator :
     '''
-    op = p[-1]
     st = SymbolTable.get()
-    if op == ')':
-        try:
-            prev_operands = st.operands_stacks().pop()
-            st.set_operands(prev_operands)
-        except:
-            st.set_operands(Stack())
-
-        try:
-            prev_types = st.types_stacks().pop()
-            st.set_types(prev_types)
-        except:
-            st.set_types(Stack())
-
-        try:
-            prev_operators = st.operators_stacks().pop()
-            st.set_operators(prev_operators)
-        except:
-            st.set_operators(Stack())
-    else:
-        st.operators().pop()
+    pop_operator(st, p[-1])
 
 
 def p_factor(p):
-    # TODO add logic after getting fake ceiling
     '''
     factor : LEFT_PARENTHESIS push_operator expression RIGHT_PARENTHESIS pop_operator save_operand
            | constant save_operand
@@ -627,11 +563,17 @@ def p_write(p):
 
 def p_write_1(p):
     '''
-    write_1 : expression write_2
-            | CONST_STRING write_2
+    write_1 : expression write_expression write_2
+            | CONST_STRING write_expression write_2
     '''
     p[0] = tuple(p[1:])
 
+def p_write_expression(p):
+    '''
+    write_expression :
+    '''
+    # jala con el expression? regresa el valor o accesamos a algún stack?
+    print(p[-1])
 
 def p_write_2(p):
     '''
