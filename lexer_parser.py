@@ -611,14 +611,14 @@ def p_write_2(p):
 
 def p_decision(p):
     '''
-    decision : IF LEFT_PARENTHESIS expression RIGHT_PARENTHESIS block elsif else
+    decision : IF LEFT_PARENTHESIS expression RIGHT_PARENTHESIS create_gotof block elsif else decision_end
     '''
     p[0] = tuple(p[1:])
 
 
 def p_elsif(p):
     '''
-    elsif : ELSIF LEFT_PARENTHESIS expression RIGHT_PARENTHESIS block elsif
+    elsif : create_elsif_quad ELSIF LEFT_PARENTHESIS expression RIGHT_PARENTHESIS block elsif
           | empty
     '''
     p[0] = tuple(p[1:])
@@ -626,10 +626,55 @@ def p_elsif(p):
 
 def p_else(p):
     '''
-    else : ELSE block
+    else : create_else_quad ELSE block
          | empty
     '''
     p[0] = tuple(p[1:])
+
+
+def p_create_gotof(p):
+    '''
+    create_gotof :
+    '''
+    st = SymbolTable.get()
+    exp_type = st.op_types().pop()
+    if exp_type != 'bool':
+        raise Exception(
+            f'Line {p.lineno}: type mismatch. \
+            Expected bool but expression resolved to {exp_type}.'
+            )
+    else:
+        exp_val = st.operands().pop()
+        # Generate the gotoF quad
+        gotof_quad = Quad('gotof', exp_val, None, None)
+        st.pending_jumps().push(gotof_quad)
+        st.add_to_j_counter()
+
+
+def p_decision_end(p):
+    '''
+    decision_end :
+    '''
+    st = SymbolTable.get()
+    st.pending_jumps().top().set_res(st.j_counter())
+
+# TODO
+def p_create_elsif_quad(p):
+    '''
+    create_elsif_quad :
+    '''
+    st = SymbolTable.get()
+
+
+def p_create_else_quad(p):
+    '''
+    create_else_quad :
+    '''
+    st = SymbolTable.get()
+    quad = Quad('goto', None, None, None)
+    st.pending_jumps().top().set_res(st.j_counter())
+    st.pending_jumps().push(quad)
+    st.add_to_j_counter()
 
 
 def p_cond_loop(p):

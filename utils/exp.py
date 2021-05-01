@@ -12,7 +12,7 @@ def eval_exp_or_term(st):
     res_type = match_operators(left_type, right_type, operator)
     temp_var_name = f't_{st.t_counter()}'
     #print(f'{left_op}.{left_type} {operator} {right_op}.{right_type} = {temp_var_name}.{res_type}')
-    st.add_to_counter()
+    st.add_to_t_counter()
     st.save_temp_var(temp_var_name, res_type)
 
     quad = Quad(operator, left_op, right_op, temp_var_name)

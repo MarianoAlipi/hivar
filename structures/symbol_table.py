@@ -211,11 +211,19 @@ class SymbolTable:
     def add_class(self, class_name):
         return self.__classes.append(class_name)
 
+    # Temp variable counter
     def t_counter(self):
         return self.__t_counter
 
-    def add_to_counter(self):
+    # Jump counter
+    def j_counter(self):
+        return self.__j_counter
+
+    def add_to_t_counter(self):
         self.__t_counter += 1
+
+    def add_to_j_counter(self):
+        self.__j_counter += 1
 
     def operands(self):
         return self.__operands
@@ -226,11 +234,12 @@ class SymbolTable:
     def operators(self):
         return self.__operators
 
+    def pending_jumps(self):
+        return self.__pending_jumps
+
     # These are stacks of stacks.
-    # When a ( is pushed, the current stacks
-    # are saved into these.
-    # When ) is found, the previous stacks
-    # are retrieved by popping these.
+    # When a ( is pushed, the current stacks are saved into these.
+    # When ) is found, the previous stacks are retrieved by popping these.
     def operands_stacks(self):
         return self.__operands_stacks
 
@@ -276,10 +285,12 @@ class SymbolTable:
             self.__operands = Stack()
             self.__op_types = Stack()
             self.__operators = Stack()
+            self.__pending_jumps = Stack()
             self.__operands_stacks = Stack()
             self.__types_stacks = Stack()
             self.__operators_stacks = Stack()
             self.__quads = []
             self.__classes = []
             self.__t_counter = 0
+            self.__j_counter = 0
             self.__var_to_assign = None
