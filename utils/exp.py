@@ -1,6 +1,7 @@
 from utils.semantics import match_operators
 from structures.quadruples import Quad
 
+
 def eval_exp_or_term(st):
     right_op = st.operands().pop()
     right_type = st.op_types().pop()
@@ -20,6 +21,7 @@ def eval_exp_or_term(st):
     st.operands().push(temp_var_name)
     st.op_types().push(res_type)
 
+
 def assign_to_var(st):
     right_op = ''
     left_op = st.operands().pop()
@@ -34,3 +36,15 @@ def assign_to_var(st):
     quad = Quad(operator, left_op, right_op, res_var)
 
     st.quads().append(quad)
+
+
+def flatten(data):
+    if isinstance(data, tuple):
+        if len(data) == 0:
+            return ()
+        else:
+            return flatten(data[0]) + flatten(data[1:])
+    else:
+        if data == None:
+            return ()
+        return (data,)

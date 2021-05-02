@@ -9,7 +9,7 @@ A00822247
 from ply import lex
 from ply import yacc
 from structures.symbol_table import SymbolTable, Variable
-from utils.exp import eval_exp_or_term, assign_to_var
+from utils.exp import *
 from utils.semantics import match_operators
 from structures.quadruples import Quad
 from structures.stack import Stack, push_operator, pop_operator
@@ -356,10 +356,20 @@ def p_set_var_as_curr(p):
 
 def p_expression(p):
     '''
-    expression : exp relational_op exp
+    expression : exp relational_op push_operator exp eval_relop
                | exp
     '''
     p[0] = tuple(p[1:])
+
+
+def p_eval_relop(p):
+    '''
+    eval_relop :
+    '''
+    st = SymbolTable.get()
+    relops = ['>', '<', '>=', '<=', '==']
+    if st.operators().top() in relops:
+        eval_exp_or_term(st)
 
 
 def p_relational_op(p):
@@ -392,6 +402,7 @@ def p_eval_exp(p):
     st = SymbolTable.get()
     if st.operators().top() == '+' or st.operators().top() == '-':
         eval_exp_or_term(st)
+
 
 def p_term(p):
     '''
@@ -541,9 +552,19 @@ def p_read(p):
 
 def p_read_1(p):
     '''
-    read_1 : variable read_2
+    read_1 : variable read_expression read_2
     '''
     p[0] = tuple(p[1:])
+
+
+def p_read_expression(p):
+    '''
+    read_expression :
+    '''
+    st = SymbolTable.get()
+    quad = Quad('read', '', '', p[-1])
+    st.quads().append(quad)
+    # TODO read
 
 
 def p_read_2(p):
@@ -568,12 +589,17 @@ def p_write_1(p):
     '''
     p[0] = tuple(p[1:])
 
+
 def p_write_expression(p):
     '''
     write_expression :
     '''
-    # jala con el expression? regresa el valor o accesamos a algún stack?
-    print(p[-1])
+    to_write = flatten(p[-1])
+    st = SymbolTable.get()
+    quad = Quad('write', '', '', to_write)
+    st.quads().append(quad)
+    # TODO write
+
 
 def p_write_2(p):
     '''

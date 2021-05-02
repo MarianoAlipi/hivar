@@ -24,6 +24,7 @@ def push_operator(st, op):
     else:
         st.operators().push(op)
 
+
 def pop_operator(st, op):
     if op == ')':
         try:
@@ -61,8 +62,6 @@ class Stack:
     def pop(self):
         if valid(self):
             element = self.__stack.pop()
-            if element == '+' or element == '-' or element == '*' or element == '/':
-                print(element)
             return element
 
     def top(self):
