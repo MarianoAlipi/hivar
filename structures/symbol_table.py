@@ -225,6 +225,9 @@ class SymbolTable:
     def add_to_j_counter(self):
         self.__j_counter += 1
 
+    def add_to_elsif_counter(self):
+        self.__elsif_counter += 1
+
     def operands(self):
         return self.__operands
 
@@ -249,6 +252,12 @@ class SymbolTable:
     def operators_stacks(self):
         return self.__operators_stacks
 
+    def elsif_counter(self):
+        return self.__elsif_counter
+
+    def reset_elsif_counter(self):
+        self.__elsif_counter = 0
+
     def set_operands(self, val):
         self.__operands = val
 
@@ -260,9 +269,12 @@ class SymbolTable:
 
     def print_quads(self):
         quads = self.quads()
+        counter = 1
         for quad in quads:
-            print(quad.operator(), quad.left_op(),
+
+            print(counter, quad.operator(), quad.left_op(),
                   quad.right_op(), quad.result())
+            counter += 1
 
     def var_to_assign(self):
         return self.__var_to_assign
@@ -291,6 +303,6 @@ class SymbolTable:
             self.__operators_stacks = Stack()
             self.__quads = []
             self.__classes = []
-            self.__t_counter = 0
-            self.__j_counter = 0
+            self.__t_counter = 1
+            self.__elsif_counter = 0
             self.__var_to_assign = None

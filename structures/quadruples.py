@@ -20,3 +20,6 @@ class Quad:
 
     def set_res(self, new_res):
         self.__res = new_res
+
+    def print(self):
+        print(f'{self.operator()} {self.left_op()} {self.right_op()} {self.result()}')

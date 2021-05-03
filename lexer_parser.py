@@ -219,6 +219,7 @@ def p_vars_2(p):
 def p_funcs(p):
     '''
     funcs : FUNCTION func_type ID save_id save_func push_scope LEFT_PARENTHESIS parameters RIGHT_PARENTHESIS LEFT_CURLY vars block_1 RIGHT_CURLY pop_scope SEMICOLON funcs_1
+          | empty
     '''
     p[0] = tuple(p[1:])
 
@@ -618,7 +619,7 @@ def p_decision(p):
 
 def p_elsif(p):
     '''
-    elsif : create_elsif_quad ELSIF LEFT_PARENTHESIS expression RIGHT_PARENTHESIS block elsif
+    elsif : create_elsif_goto ELSIF LEFT_PARENTHESIS expression RIGHT_PARENTHESIS create_gotof block create_elsif_gotof elsif
           | empty
     '''
     p[0] = tuple(p[1:])
@@ -626,13 +627,13 @@ def p_elsif(p):
 
 def p_else(p):
     '''
-    else : create_else_quad ELSE block
+    else : create_goto_quad ELSE block
          | empty
     '''
     p[0] = tuple(p[1:])
 
 
-def p_create_gotof(p):
+def p_create_gotof(param):
     '''
     create_gotof :
     '''
@@ -642,23 +643,67 @@ def p_create_gotof(p):
         raise Exception(
             f'Line {p.lineno}: type mismatch. \
             Expected bool but expression resolved to {exp_type}.'
-            )
+        )
     else:
-        exp_val = st.operands().pop()
+        # breakpoint()
+        exp_eval = st.operands().pop()
         # Generate the gotoF quad
-        gotof_quad = Quad('gotof', exp_val, None, None)
+        gotof_quad = Quad('gotof', exp_eval, None, None)
+        # meter cont-1 (el que apunta a gotof) en la pila de saltos
         st.pending_jumps().push(gotof_quad)
-        st.add_to_j_counter()
+        # metelo a los quads para poderlo settear alrato
+        st.quads().append(gotof_quad)
+        # breakpoint()
 
 
-def p_decision_end(p):
+def p_create_elsif_gotof(param):
+    '''
+    create_elsif_gotof :
+    '''
+    st = SymbolTable.get()
+    # TODO
+
+    past_gotof = st.pending_jumps().pop()
+    # haz nuevo goto
+    goto_quad = Quad('goto', None, None, None)
+    st.pending_jumps().push(goto_quad)
+    # metelo a los quads para poderlo settear alrato
+    st.quads().append(goto_quad)
+    # dile al gotof que la que sigue el la sig instrucciones
+    past_gotof.set_res(len(st.quads())+1)
+    st.add_to_elsif_counter()
+    # breakpoint()
+
+
+def p_decision_end(param):
     '''
     decision_end :
     '''
     st = SymbolTable.get()
-    st.pending_jumps().top().set_res(st.j_counter())
+    # checa si tienes elseifs con gotos pendientes
+    quads_pendientes_del_elsif = st.elsif_counter()
+    st.reset_elsif_counter()
+    # encontrar los last N quads que tengan goto con None y ponerles que vayan a la sig instruccion
+    pos_primer_quad_post_else = len(st.quads())+1
+    for quad in get_quads_to_set(st, quads_pendientes_del_elsif):
+        quad.set_res(pos_primer_quad_post_else)
 
-# TODO
+    # breakpoint()
+    primer_quad_post_else = st.pending_jumps().pop()
+    primer_quad_post_else.set_res(len(st.quads())+1)
+    # breakpoint()
+
+
+def get_quads_to_set(st, cant):
+    quads = st.quads()
+    quads_to_set = []
+    for quad in reversed(quads):
+        if quad.operator() == 'goto' and quad.result() == None:
+            quads_to_set.append(quad)
+
+    return quads_to_set
+
+
 def p_create_elsif_quad(p):
     '''
     create_elsif_quad :
@@ -666,22 +711,89 @@ def p_create_elsif_quad(p):
     st = SymbolTable.get()
 
 
-def p_create_else_quad(p):
+def p_create_elsif_goto(param):
     '''
-    create_else_quad :
+    create_elsif_goto :
+    '''
+    # TODO
+    st = SymbolTable.get()
+    # haz un nuevo quad goto (para cuando acabo el elseif y se debe ir al final de la decision else {} ***)
+    quad = Quad('goto', None, None, None)
+    # saca el último quad (gotof)
+    last_quad = st.pending_jumps().pop()
+    # mete el quad goto a pending
+    st.pending_jumps().push(quad)
+    st.quads().append(quad)
+    # dile al quad gotof que la sig instruccion estara en donde sigue
+    last_quad.set_res(len(st.quads())+1)
+    st.add_to_elsif_counter()
+
+
+def p_create_goto_quad(param):
+    '''
+    create_goto_quad :
     '''
     st = SymbolTable.get()
+    # breakpoint()
     quad = Quad('goto', None, None, None)
-    st.pending_jumps().top().set_res(st.j_counter())
+    fal = st.pending_jumps().pop()
     st.pending_jumps().push(quad)
-    st.add_to_j_counter()
+    st.quads().append(quad)
+    fal.set_res(len(st.quads())+1)
+    # breakpoint()
 
 
 def p_cond_loop(p):
     '''
-    cond_loop : WHILE LEFT_PARENTHESIS expression RIGHT_PARENTHESIS DO block
+    cond_loop : WHILE push_while LEFT_PARENTHESIS expression RIGHT_PARENTHESIS eval_while_exp DO block fill_gotof_while
     '''
     p[0] = tuple(p[1:])
+
+
+def p_fill_gotof_while(p):
+    '''
+    fill_gotof_while :
+    '''
+    st = SymbolTable.get()
+
+    end = st.pending_jumps().pop()
+    quad_to_return_to = st.pending_jumps().pop()
+
+    breakpoint()
+    quad = Quad('goto', None, None, quad_to_return_to)
+    st.quads().append(quad)
+    end.set_res(len(st.quads())+1)
+
+
+def p_eval_while_exp(p):
+    '''
+    eval_while_exp :
+    '''
+    st = SymbolTable.get()
+    exp_type = st.op_types().pop()
+    if exp_type != 'bool':
+        raise Exception(
+            f'Line {p.lineno}: type mismatch. \
+            Expected bool but expression resolved to {exp_type}.'
+        )
+    else:
+        exp_eval = st.operands().pop()
+        # Generate the gotoF quad
+        gotof_quad = Quad('gotof', exp_eval, None, None)
+        # meter cont-1 (el que apunta a gotof) en la pila de saltos
+        st.pending_jumps().push(gotof_quad)
+        # metelo a los quads para poderlo settear alrato
+        st.quads().append(gotof_quad)
+
+
+def p_push_while(p):
+    '''
+    push_while :
+    '''
+    st = SymbolTable.get()
+    quad = Quad('goto', None, None, len(st.quads())+1)
+    st.pending_jumps().push(len(st.quads())+1)
+    # st.quads.append(quad)
 
 
 def p_non_cond_loop(p):
