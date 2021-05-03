@@ -641,7 +641,7 @@ def p_create_gotof(param):
     exp_type = st.op_types().pop()
     if exp_type != 'bool':
         raise Exception(
-            f'Line {p.lineno}: type mismatch. \
+            f'Type mismatch. \
             Expected bool but expression resolved to {exp_type}.'
         )
     else:
@@ -773,7 +773,7 @@ def p_eval_while_exp(p):
     exp_type = st.op_types().pop()
     if exp_type != 'bool':
         raise Exception(
-            f'Line {p.lineno}: type mismatch. \
+            f'Type mismatch. \
             Expected bool but expression resolved to {exp_type}.'
         )
     else:
@@ -818,7 +818,7 @@ def p_error(p):
     if p == None:
         token = 'End of file'
     else:
-        token = f'{p.type}(\'{p.value}\') at line {p.lineno}'
+        token = f'{p.type}(\'{p.value}\')'
     raise SyntaxError(token)
 
 
