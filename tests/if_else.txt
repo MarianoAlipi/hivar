@@ -1,0 +1,25 @@
+program nolineales;
+
+hivar
+    int : A, B, C, D;
+byevar
+
+
+main() {
+    if (A+B>D) {
+        if (A>B) {
+            A = 0;
+            B = B + D;
+        } elsif (A<B) {
+            A = A + 1;
+
+        } 
+        else {
+            C = A + B;
+        } ;
+    }
+    else {
+        A = B + C;
+    };
+    D = B + A * C;
+};

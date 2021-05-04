@@ -10,6 +10,7 @@ from ply import lex
 from ply import yacc
 from structures.symbol_table import SymbolTable, Variable
 from utils.exp import *
+from utils.non_linear import *
 from utils.semantics import match_operators
 from structures.quadruples import Quad
 from structures.stack import Stack, push_operator, pop_operator
@@ -219,6 +220,7 @@ def p_vars_2(p):
 def p_funcs(p):
     '''
     funcs : FUNCTION func_type ID save_id save_func push_scope LEFT_PARENTHESIS parameters RIGHT_PARENTHESIS LEFT_CURLY vars block_1 RIGHT_CURLY pop_scope SEMICOLON funcs_1
+          | empty
     '''
     p[0] = tuple(p[1:])
 
@@ -309,7 +311,7 @@ def p_statement_1(p):
 def p_assignment(p):
     '''
     assignment : variable set_var_to_assign EQUALS_ASSIGNMENT exp assign_to_var
-               | variable set_var_to_assign EQUALS_ASSIGNMENT func_call 
+               | variable set_var_to_assign EQUALS_ASSIGNMENT func_call
     '''
     p[0] = tuple(p[1:])
     # TODO assignment with func_call
@@ -461,7 +463,7 @@ def p_save_operand(p):
 
 def p_set_constant_sign(p):
     '''
-    set_constant_sign : 
+    set_constant_sign :
     '''
     st = SymbolTable.get()
     st.curr_constant_sign = p[-1]
@@ -477,7 +479,7 @@ def p_constant(p):
 
 def p_save_int_var_as_current(p):
     '''
-    save_int_var_as_current : 
+    save_int_var_as_current :
     '''
     st = SymbolTable.get()
     st.set_curr_type('int')
@@ -492,7 +494,7 @@ def p_save_int_var_as_current(p):
 
 def p_save_float_var_as_current(p):
     '''
-    save_float_var_as_current : 
+    save_float_var_as_current :
     '''
     st = SymbolTable.get()
     st.set_curr_type('float')
@@ -611,14 +613,14 @@ def p_write_2(p):
 
 def p_decision(p):
     '''
-    decision : IF LEFT_PARENTHESIS expression RIGHT_PARENTHESIS block elsif else
+    decision : IF LEFT_PARENTHESIS expression RIGHT_PARENTHESIS create_gotof create_if_escape block elsif else decision_end
     '''
     p[0] = tuple(p[1:])
 
 
 def p_elsif(p):
     '''
-    elsif : ELSIF LEFT_PARENTHESIS expression RIGHT_PARENTHESIS block elsif
+    elsif : create_goto ELSIF LEFT_PARENTHESIS expression RIGHT_PARENTHESIS create_gotof block elsif
           | empty
     '''
     p[0] = tuple(p[1:])
@@ -626,24 +628,112 @@ def p_elsif(p):
 
 def p_else(p):
     '''
-    else : ELSE block
+    else : create_goto ELSE block
          | empty
     '''
     p[0] = tuple(p[1:])
 
 
+def p_create_if_escape(p):
+    '''
+    create_if_escape :
+    '''
+    st = SymbolTable.get()
+    create_if_escape(st)
+
+
+def p_create_gotof(param):
+    '''
+    create_gotof :
+    '''
+    st = SymbolTable.get()
+    create_gotof(st)
+
+
+def p_create_goto(param):
+    '''
+    create_goto :
+    '''
+    st = SymbolTable.get()
+    create_goto(st)
+
+
+def p_decision_end(param):
+    '''
+    decision_end :
+    '''
+    st = SymbolTable.get()
+    decision_end(st)
+
+
 def p_cond_loop(p):
     '''
-    cond_loop : WHILE LEFT_PARENTHESIS expression RIGHT_PARENTHESIS DO block
+    cond_loop : WHILE push_while LEFT_PARENTHESIS expression RIGHT_PARENTHESIS eval_while_exp DO block fill_gotof_while
     '''
     p[0] = tuple(p[1:])
+
+
+def p_fill_gotof_while(p):
+    '''
+    fill_gotof_while :
+    '''
+    st = SymbolTable.get()
+    fill_gotof_while(st)
+
+
+def p_eval_while_exp(p):
+    '''
+    eval_while_exp :
+    '''
+    st = SymbolTable.get()
+    eval_while_exp(st)
+
+
+def p_push_while(p):
+    '''
+    push_while :
+    '''
+    st = SymbolTable.get()
+    push_while(st)
 
 
 def p_non_cond_loop(p):
     '''
-    non_cond_loop : FROM ID EQUALS_ASSIGNMENT exp TO exp DO block
+    non_cond_loop : FROM ID push_for_id EQUALS_ASSIGNMENT exp save_for_assgn_quad TO exp save_for_cond_quad DO block restart_loop
     '''
     p[0] = tuple(p[1:])
+
+
+def p_restart_loop(p):
+    '''
+    restart_loop :
+    '''
+    st = SymbolTable.get()
+    restart_loop(st)
+
+
+def p_save_for_cond_quad(p):
+    '''
+    save_for_cond_quad :
+    '''
+    st = SymbolTable.get()
+    save_cond_for_quad(st)
+
+
+def p_save_for_assgn_quad(p):
+    '''
+    save_for_assgn_quad :
+    '''
+    st = SymbolTable.get()
+    save_for_assgn_quad(st)
+
+
+def p_push_for_id(p):
+    '''
+    push_for_id :
+    '''
+    st = SymbolTable.get()
+    st.for_ids().push(p[-1])
 
 
 def p_empty(p):
@@ -661,7 +751,7 @@ def p_error(p):
     if p == None:
         token = 'End of file'
     else:
-        token = f'{p.type}(\'{p.value}\') at line {p.lineno}'
+        token = f'{p.type}(\'{p.value}\')'
     raise SyntaxError(token)
 
 

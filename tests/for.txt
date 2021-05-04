@@ -1,0 +1,15 @@
+program nolineales;
+
+hivar
+    int : A, B, C;
+byevar
+
+
+main() {
+    from A = 1 to 10 do {
+        B = B + 1;
+        from B = 2 to 5 do {
+            C = C + 1;
+        };
+    };
+};
