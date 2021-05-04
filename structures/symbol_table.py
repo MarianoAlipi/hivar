@@ -215,18 +215,8 @@ class SymbolTable:
     def t_counter(self):
         return self.__t_counter
 
-    # Jump counter
-    def j_counter(self):
-        return self.__j_counter
-
     def add_to_t_counter(self):
         self.__t_counter += 1
-
-    def add_to_j_counter(self):
-        self.__j_counter += 1
-
-    def add_to_elsif_counter(self):
-        self.__elsif_counter += 1
 
     def operands(self):
         return self.__operands
@@ -252,11 +242,8 @@ class SymbolTable:
     def operators_stacks(self):
         return self.__operators_stacks
 
-    def elsif_counter(self):
-        return self.__elsif_counter
-
-    def reset_elsif_counter(self):
-        self.__elsif_counter = 0
+    def if_escapes(self):
+        return self.__if_escapes
 
     def set_operands(self, val):
         self.__operands = val
@@ -304,5 +291,5 @@ class SymbolTable:
             self.__quads = []
             self.__classes = []
             self.__t_counter = 1
-            self.__elsif_counter = 0
+            self.__if_escapes = Stack()
             self.__var_to_assign = None

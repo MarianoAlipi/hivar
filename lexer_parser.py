@@ -612,14 +612,14 @@ def p_write_2(p):
 
 def p_decision(p):
     '''
-    decision : IF LEFT_PARENTHESIS expression RIGHT_PARENTHESIS create_gotof block elsif else decision_end
+    decision : IF LEFT_PARENTHESIS expression RIGHT_PARENTHESIS create_gotof create_if_escape block elsif else decision_end
     '''
     p[0] = tuple(p[1:])
 
 
 def p_elsif(p):
     '''
-    elsif : create_elsif_goto ELSIF LEFT_PARENTHESIS expression RIGHT_PARENTHESIS create_gotof block create_elsif_gotof elsif
+    elsif : create_goto ELSIF LEFT_PARENTHESIS expression RIGHT_PARENTHESIS create_gotof block elsif
           | empty
     '''
     p[0] = tuple(p[1:])
@@ -627,10 +627,24 @@ def p_elsif(p):
 
 def p_else(p):
     '''
-    else : create_goto_quad ELSE block
+    else : create_goto ELSE block
          | empty
     '''
     p[0] = tuple(p[1:])
+
+
+def p_create_if_escape(p):
+    '''
+    create_if_escape :
+    '''
+    # 'if_escape' is a goto that jumps out of the whole conditional structure.
+    # There is one 'master' if_escape for each conditional structure
+    # (i.e. the whole if-elsif-else block).
+    # Here we create the 'master' if_escape that will be inserted as many times
+    # as needed.
+    st = SymbolTable.get()
+    if_escape = Quad('goto', None, None, None)
+    st.if_escapes().push(if_escape)
 
 
 def p_create_gotof(param):
@@ -639,40 +653,33 @@ def p_create_gotof(param):
     '''
     st = SymbolTable.get()
     exp_type = st.op_types().pop()
+    # Make sure the condition evaluates to a boolean.
     if exp_type != 'bool':
         raise Exception(
             f'Type mismatch. \
             Expected bool but expression resolved to {exp_type}.'
         )
     else:
-        # breakpoint()
         exp_eval = st.operands().pop()
-        # Generate the gotoF quad
+        # Generate the gotof quad
         gotof_quad = Quad('gotof', exp_eval, None, None)
-        # meter cont-1 (el que apunta a gotof) en la pila de saltos
+        # Add gotof quad to pending_jumps (we don't know its target quad yet)
+        # and to the list of all quads.
         st.pending_jumps().push(gotof_quad)
-        # metelo a los quads para poderlo settear alrato
         st.quads().append(gotof_quad)
-        # breakpoint()
 
 
-def p_create_elsif_gotof(param):
+def p_create_goto(param):
     '''
-    create_elsif_gotof :
+    create_goto :
     '''
     st = SymbolTable.get()
-    # TODO
-
-    past_gotof = st.pending_jumps().pop()
-    # haz nuevo goto
-    goto_quad = Quad('goto', None, None, None)
-    st.pending_jumps().push(goto_quad)
-    # metelo a los quads para poderlo settear alrato
-    st.quads().append(goto_quad)
-    # dile al gotof que la que sigue el la sig instrucciones
-    past_gotof.set_res(len(st.quads())+1)
-    st.add_to_elsif_counter()
-    # breakpoint()
+    # This is the end of the block, so we'll need to insert an if_escape here.
+    if_escape = st.if_escapes().top()
+    st.quads().append(if_escape)
+    # We now know the target of the last gotof, so set it.
+    last_gotof = st.pending_jumps().pop()
+    last_gotof.set_res(len(st.quads()) + 1)
 
 
 def p_decision_end(param):
@@ -680,67 +687,11 @@ def p_decision_end(param):
     decision_end :
     '''
     st = SymbolTable.get()
-    # checa si tienes elseifs con gotos pendientes
-    quads_pendientes_del_elsif = st.elsif_counter()
-    st.reset_elsif_counter()
-    # encontrar los last N quads que tengan goto con None y ponerles que vayan a la sig instruccion
-    pos_primer_quad_post_else = len(st.quads())+1
-    for quad in get_quads_to_set(st, quads_pendientes_del_elsif):
-        quad.set_res(pos_primer_quad_post_else)
-
-    # breakpoint()
-    primer_quad_post_else = st.pending_jumps().pop()
-    primer_quad_post_else.set_res(len(st.quads())+1)
-    # breakpoint()
-
-
-def get_quads_to_set(st, cant):
-    quads = st.quads()
-    quads_to_set = []
-    for quad in reversed(quads):
-        if quad.operator() == 'goto' and quad.result() == None:
-            quads_to_set.append(quad)
-
-    return quads_to_set
-
-
-def p_create_elsif_quad(p):
-    '''
-    create_elsif_quad :
-    '''
-    st = SymbolTable.get()
-
-
-def p_create_elsif_goto(param):
-    '''
-    create_elsif_goto :
-    '''
-    # TODO
-    st = SymbolTable.get()
-    # haz un nuevo quad goto (para cuando acabo el elseif y se debe ir al final de la decision else {} ***)
-    quad = Quad('goto', None, None, None)
-    # saca el último quad (gotof)
-    last_quad = st.pending_jumps().pop()
-    # mete el quad goto a pending
-    st.pending_jumps().push(quad)
-    st.quads().append(quad)
-    # dile al quad gotof que la sig instruccion estara en donde sigue
-    last_quad.set_res(len(st.quads())+1)
-    st.add_to_elsif_counter()
-
-
-def p_create_goto_quad(param):
-    '''
-    create_goto_quad :
-    '''
-    st = SymbolTable.get()
-    # breakpoint()
-    quad = Quad('goto', None, None, None)
-    fal = st.pending_jumps().pop()
-    st.pending_jumps().push(quad)
-    st.quads().append(quad)
-    fal.set_res(len(st.quads())+1)
-    # breakpoint()
+    # Set the pending gotos' result.
+    # Because we use the object's reference,
+    # the result will be in every relevant quad.
+    if_escape = st.if_escapes().pop()
+    if_escape.set_res(len(st.quads()) + 1)
 
 
 def p_cond_loop(p):
@@ -778,11 +729,11 @@ def p_eval_while_exp(p):
         )
     else:
         exp_eval = st.operands().pop()
-        # Generate the gotoF quad
+        # Generate the gotof quad
         gotof_quad = Quad('gotof', exp_eval, None, None)
-        # meter cont-1 (el que apunta a gotof) en la pila de saltos
+        # Add gotof quad to pending_jumps (we don't know its target quad yet)
+        # and to the list of all quads.
         st.pending_jumps().push(gotof_quad)
-        # metelo a los quads para poderlo settear alrato
         st.quads().append(gotof_quad)
 
 
@@ -791,8 +742,8 @@ def p_push_while(p):
     push_while :
     '''
     st = SymbolTable.get()
-    quad = Quad('goto', None, None, len(st.quads())+1)
-    st.pending_jumps().push(len(st.quads())+1)
+    quad = Quad('goto', None, None, len(st.quads()) + 1)
+    st.pending_jumps().push(len(st.quads()) + 1)
     # st.quads.append(quad)
 
 
