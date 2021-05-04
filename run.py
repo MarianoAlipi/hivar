@@ -4,7 +4,7 @@ from structures.symbol_table import SymbolTable
 
 DEBUG_MODE = 0
 
-lines = get_file_content("tests/if_else.txt")
+lines = get_file_content("tests/for.txt")
 lexer.input(lines)
 
 try:
@@ -16,4 +16,5 @@ except SyntaxError as e:
 
 # if DEBUG_MODE:
 st = SymbolTable.get()
+st.print_quads()
 breakpoint()

@@ -245,6 +245,9 @@ class SymbolTable:
     def if_escapes(self):
         return self.__if_escapes
 
+    def for_ids(self):
+        return self.__for_ids
+
     def set_operands(self, val):
         self.__operands = val
 
@@ -293,3 +296,4 @@ class SymbolTable:
             self.__t_counter = 1
             self.__if_escapes = Stack()
             self.__var_to_assign = None
+            self.__for_ids = Stack()

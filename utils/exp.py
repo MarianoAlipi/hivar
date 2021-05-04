@@ -1,6 +1,10 @@
 from utils.semantics import match_operators
 from structures.quadruples import Quad
 
+def get_temp_var_name(st):
+    temp_var_name = f't_{st.t_counter()}'
+    st.add_to_t_counter()
+    return temp_var_name
 
 def eval_exp_or_term(st):
     right_op = st.operands().pop()
@@ -10,9 +14,8 @@ def eval_exp_or_term(st):
     operator = st.operators().pop()
 
     res_type = match_operators(left_type, right_type, operator)
-    temp_var_name = f't_{st.t_counter()}'
+    temp_var_name = get_temp_var_name(st)
     #print(f'{left_op}.{left_type} {operator} {right_op}.{right_type} = {temp_var_name}.{res_type}')
-    st.add_to_t_counter()
     st.save_temp_var(temp_var_name, res_type)
 
     quad = Quad(operator, left_op, right_op, temp_var_name)

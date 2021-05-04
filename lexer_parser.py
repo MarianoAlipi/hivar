@@ -10,6 +10,7 @@ from ply import lex
 from ply import yacc
 from structures.symbol_table import SymbolTable, Variable
 from utils.exp import *
+from utils.non_linear import *
 from utils.semantics import match_operators
 from structures.quadruples import Quad
 from structures.stack import Stack, push_operator, pop_operator
@@ -310,7 +311,7 @@ def p_statement_1(p):
 def p_assignment(p):
     '''
     assignment : variable set_var_to_assign EQUALS_ASSIGNMENT exp assign_to_var
-               | variable set_var_to_assign EQUALS_ASSIGNMENT func_call 
+               | variable set_var_to_assign EQUALS_ASSIGNMENT func_call
     '''
     p[0] = tuple(p[1:])
     # TODO assignment with func_call
@@ -462,7 +463,7 @@ def p_save_operand(p):
 
 def p_set_constant_sign(p):
     '''
-    set_constant_sign : 
+    set_constant_sign :
     '''
     st = SymbolTable.get()
     st.curr_constant_sign = p[-1]
@@ -478,7 +479,7 @@ def p_constant(p):
 
 def p_save_int_var_as_current(p):
     '''
-    save_int_var_as_current : 
+    save_int_var_as_current :
     '''
     st = SymbolTable.get()
     st.set_curr_type('int')
@@ -493,7 +494,7 @@ def p_save_int_var_as_current(p):
 
 def p_save_float_var_as_current(p):
     '''
-    save_float_var_as_current : 
+    save_float_var_as_current :
     '''
     st = SymbolTable.get()
     st.set_curr_type('float')
@@ -637,14 +638,8 @@ def p_create_if_escape(p):
     '''
     create_if_escape :
     '''
-    # 'if_escape' is a goto that jumps out of the whole conditional structure.
-    # There is one 'master' if_escape for each conditional structure
-    # (i.e. the whole if-elsif-else block).
-    # Here we create the 'master' if_escape that will be inserted as many times
-    # as needed.
     st = SymbolTable.get()
-    if_escape = Quad('goto', None, None, None)
-    st.if_escapes().push(if_escape)
+    create_if_escape(st)
 
 
 def p_create_gotof(param):
@@ -652,21 +647,7 @@ def p_create_gotof(param):
     create_gotof :
     '''
     st = SymbolTable.get()
-    exp_type = st.op_types().pop()
-    # Make sure the condition evaluates to a boolean.
-    if exp_type != 'bool':
-        raise Exception(
-            f'Type mismatch. \
-            Expected bool but expression resolved to {exp_type}.'
-        )
-    else:
-        exp_eval = st.operands().pop()
-        # Generate the gotof quad
-        gotof_quad = Quad('gotof', exp_eval, None, None)
-        # Add gotof quad to pending_jumps (we don't know its target quad yet)
-        # and to the list of all quads.
-        st.pending_jumps().push(gotof_quad)
-        st.quads().append(gotof_quad)
+    create_gotof(st)
 
 
 def p_create_goto(param):
@@ -674,12 +655,7 @@ def p_create_goto(param):
     create_goto :
     '''
     st = SymbolTable.get()
-    # This is the end of the block, so we'll need to insert an if_escape here.
-    if_escape = st.if_escapes().top()
-    st.quads().append(if_escape)
-    # We now know the target of the last gotof, so set it.
-    last_gotof = st.pending_jumps().pop()
-    last_gotof.set_res(len(st.quads()) + 1)
+    create_goto(st)
 
 
 def p_decision_end(param):
@@ -687,11 +663,7 @@ def p_decision_end(param):
     decision_end :
     '''
     st = SymbolTable.get()
-    # Set the pending gotos' result.
-    # Because we use the object's reference,
-    # the result will be in every relevant quad.
-    if_escape = st.if_escapes().pop()
-    if_escape.set_res(len(st.quads()) + 1)
+    decision_end(st)
 
 
 def p_cond_loop(p):
@@ -706,14 +678,7 @@ def p_fill_gotof_while(p):
     fill_gotof_while :
     '''
     st = SymbolTable.get()
-
-    end = st.pending_jumps().pop()
-    quad_to_return_to = st.pending_jumps().pop()
-
-    breakpoint()
-    quad = Quad('goto', None, None, quad_to_return_to)
-    st.quads().append(quad)
-    end.set_res(len(st.quads())+1)
+    fill_gotof_while(st)
 
 
 def p_eval_while_exp(p):
@@ -721,20 +686,7 @@ def p_eval_while_exp(p):
     eval_while_exp :
     '''
     st = SymbolTable.get()
-    exp_type = st.op_types().pop()
-    if exp_type != 'bool':
-        raise Exception(
-            f'Type mismatch. \
-            Expected bool but expression resolved to {exp_type}.'
-        )
-    else:
-        exp_eval = st.operands().pop()
-        # Generate the gotof quad
-        gotof_quad = Quad('gotof', exp_eval, None, None)
-        # Add gotof quad to pending_jumps (we don't know its target quad yet)
-        # and to the list of all quads.
-        st.pending_jumps().push(gotof_quad)
-        st.quads().append(gotof_quad)
+    eval_while_exp(st)
 
 
 def p_push_while(p):
@@ -742,16 +694,46 @@ def p_push_while(p):
     push_while :
     '''
     st = SymbolTable.get()
-    quad = Quad('goto', None, None, len(st.quads()) + 1)
-    st.pending_jumps().push(len(st.quads()) + 1)
-    # st.quads.append(quad)
+    push_while(st)
 
 
 def p_non_cond_loop(p):
     '''
-    non_cond_loop : FROM ID EQUALS_ASSIGNMENT exp TO exp DO block
+    non_cond_loop : FROM ID push_for_id EQUALS_ASSIGNMENT exp save_for_assgn_quad TO exp save_for_cond_quad DO block restart_loop
     '''
     p[0] = tuple(p[1:])
+
+
+def p_restart_loop(p):
+    '''
+    restart_loop :
+    '''
+    st = SymbolTable.get()
+    restart_loop(st)
+
+
+def p_save_for_cond_quad(p):
+    '''
+    save_for_cond_quad :
+    '''
+    st = SymbolTable.get()
+    save_cond_for_quad(st)
+
+
+def p_save_for_assgn_quad(p):
+    '''
+    save_for_assgn_quad :
+    '''
+    st = SymbolTable.get()
+    save_for_assgn_quad(st)
+
+
+def p_push_for_id(p):
+    '''
+    push_for_id :
+    '''
+    st = SymbolTable.get()
+    st.for_ids().push(p[-1])
 
 
 def p_empty(p):
