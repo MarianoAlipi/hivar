@@ -4,7 +4,7 @@ from structures.symbol_table import SymbolTable
 
 DEBUG_MODE = 0
 
-lines = get_file_content("tests/for.txt")
+lines = get_file_content("tests/funcs.txt")
 lexer.input(lines)
 
 try:

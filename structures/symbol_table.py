@@ -82,7 +82,7 @@ class Scope:
         if new_name in self.funcs():
             raise Exception(
                 f'Function "{new_name}" is already declared in this scope')
-        self.__funcs[new_name] = Function(new_name, func_type)
+        self.__funcs[new_name] = Function(new_name, func_type, [])
         return self.__funcs[new_name]
 
     def add_var(self, new_name, var_type=None):
@@ -102,9 +102,22 @@ class Scope:
                     return var
                 return None
             else:
-                breakpoint()
                 raise Exception(
                     f'Can not find variable "{var_id}"')
+
+    def get_func_from_id(self, func_id):
+        if func_id in self.funcs():
+            return self.funcs()[func_id]
+        else:
+            parent_scope = self.parent()
+            if parent_scope:
+                func = parent_scope.get_func_from_id(func_id)
+                if func:
+                    return func
+                return None
+            else:
+                raise Exception(
+                    f'Can not find function "{func}"')
 
     def add_attribute(self, attr):
         self.__attributes.append(attr)
@@ -152,7 +165,6 @@ class SymbolTable:
         if is_valid():
             self.__current_type = new_type
         else:
-            breakpoint()
             raise Exception(f"Invalid type: {new_type}")
 
     def current_type(self):
@@ -182,8 +194,7 @@ class SymbolTable:
         self.set_last_saved_func(saved_func)
 
     def save_parameter(self):
-        param = Variable(self.current_id(), self.current_type())
-        self.last_saved_func().params().append(param)
+        self.last_saved_func().params().append(self.current_id())
         self.current_scope().add_var(self.current_id(), self.current_type())
 
     def push_scope(self):
@@ -269,8 +280,11 @@ class SymbolTable:
     def var_to_assign(self):
         return self.__var_to_assign
 
-    def set_var_to_assign(self, new_var):
-        self.__var_to_assign = new_var
+    def current_params(self):
+        return self.__current_params
+
+    def reset_current_params(self):
+        self.__current_params = []
 
     def __init__(self):
         if SymbolTable.__instance:
@@ -295,5 +309,6 @@ class SymbolTable:
             self.__classes = []
             self.__t_counter = 1
             self.__if_escapes = Stack()
-            self.__var_to_assign = None
+            self.__var_to_assign = Stack()
             self.__for_ids = Stack()
+            self.__current_params = []

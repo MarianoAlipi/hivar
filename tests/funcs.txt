@@ -1,0 +1,47 @@
+program funcs_pp;
+
+class Persona {
+    attributes
+        int : edad;
+        char : nombre[30];
+        float : matrix[10, 5];
+
+    methods
+        function int UNO (int : x) {
+            return (edad - x);
+        };
+};
+
+hivar
+    int : i, j, p;
+byevar
+ 
+function int suma (int : a, int : b) {
+    hivar
+        int : c;
+    byevar
+
+    c = a + b;
+    return(c);
+};
+
+function int mult (int : a, int : b) {
+    hivar
+        int : c;
+    byevar
+
+    c = a * b;
+    return(c);
+};
+
+function void imprime (int : c) {
+    write(c);
+};
+
+main() {
+    i = 2;
+    j = 5;
+    p = suma(i, j);
+    imprime(p);
+    p = mult(i, j);
+};

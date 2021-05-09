@@ -15,7 +15,9 @@ from utils.semantics import match_operators
 from structures.quadruples import Quad
 from structures.stack import Stack, push_operator, pop_operator
 from reserved import reserved, tokens
-
+from structures.func_directory import (save_func_to_directory, get_func_from_directory,
+                                       set_return_quad, set_return_quad_val,
+                                       set_return_var_id, get_return_var_id, update_func_prefix)
 
 # Regular expression rules for simple tokens.
 t_COMMA = r','
@@ -146,10 +148,26 @@ def p_set_vars_as_attrs(p):
 
 def p_methods(p):
     '''
-    methods : METHODS_KEYWORD funcs
+    methods : METHODS_KEYWORD update_func_prefix funcs reset_func_prefix
             | empty
     '''
     p[0] = tuple(p[1:])
+
+
+def p_update_func_prefix(p):
+    '''
+    update_func_prefix :
+    '''
+    st = SymbolTable.get()
+    update_func_prefix(st.current_scope_name() + '.')
+
+
+def p_reset_func_prefix(p):
+    '''
+    reset_func_prefix :
+    '''
+    st = SymbolTable.get()
+    update_func_prefix('')
 
 
 def p_vars(p):
@@ -219,7 +237,7 @@ def p_vars_2(p):
 
 def p_funcs(p):
     '''
-    funcs : FUNCTION func_type ID save_id save_func push_scope LEFT_PARENTHESIS parameters RIGHT_PARENTHESIS LEFT_CURLY vars block_1 RIGHT_CURLY pop_scope SEMICOLON funcs_1
+    funcs : FUNCTION func_type ID save_id save_func push_scope LEFT_PARENTHESIS parameters RIGHT_PARENTHESIS LEFT_CURLY vars block_1 set_returning_quad RIGHT_CURLY pop_scope SEMICOLON funcs_1
           | empty
     '''
     p[0] = tuple(p[1:])
@@ -311,10 +329,17 @@ def p_statement_1(p):
 def p_assignment(p):
     '''
     assignment : variable set_var_to_assign EQUALS_ASSIGNMENT exp assign_to_var
-               | variable set_var_to_assign EQUALS_ASSIGNMENT func_call
+               | variable set_var_to_assign EQUALS_ASSIGNMENT func_call assign_func_to_var
     '''
     p[0] = tuple(p[1:])
-    # TODO assignment with func_call
+
+
+def p_assign_func_to_var(p):
+    '''
+    assign_func_to_var :
+    '''
+    st = SymbolTable.get()
+    assign_func_to_var(st, p)
 
 
 def p_assign_to_var(p):
@@ -331,9 +356,9 @@ def p_set_var_to_assign(p):
     '''
     st = SymbolTable.get()
     if type(p[-1]) == tuple:
-        st.set_var_to_assign(p[-1][0])
+        st.var_to_assign().push(p[-1][0])
     else:
-        st.set_var_to_assign(p[-1])
+        st.var_to_assign().push(p[-1])
 
 
 def p_variable(p):
@@ -510,24 +535,58 @@ def p_save_float_var_as_current(p):
 def p_func_call(p):
     '''
     func_call : ID PERIOD ID LEFT_PARENTHESIS func_call_1 RIGHT_PARENTHESIS
-              | ID LEFT_PARENTHESIS func_call_1 RIGHT_PARENTHESIS
+              | ID set_return_quad_val LEFT_PARENTHESIS func_call_1 RIGHT_PARENTHESIS
     '''
     p[0] = tuple(p[1:])
+    # TODO cuando sean objetos algo tendremos que hacer con el func_prefix
+
+
+def p_set_return_quad_val(p):
+    '''
+    set_return_quad_val :
+    '''
+    st = SymbolTable.get()
+    func_jump = Quad('goto', None, None, get_func_from_directory(p[-1]))
+    st.pending_jumps().push(func_jump)
+    # clear params
+    st.reset_current_params()
+    st.current_params().append(p[-1])
+
+    function = st.current_scope().get_func_from_id(p[-1])
+    # +1 porque es el sig del counter, antes lo poniamos dentro del set reutrn quad val
+    param_cant = len(function.params()) + 2
+    set_return_quad_val(p[-1], len(st.quads())+param_cant)
 
 
 def p_func_call_1(p):
     '''
-    func_call_1 : func_call_2
+    func_call_1 : func_call_2 assign_params
                 | empty
     '''
     p[0] = tuple(p[1:])
 
 
+def p_assign_params(p):
+    '''
+    assign_params :
+    '''
+    st = SymbolTable.get()
+    create_param_assignment_quads(st)
+
+
 def p_func_call_2(p):
     '''
-    func_call_2 : exp func_call_3
+    func_call_2 : exp save_param func_call_3
     '''
     p[0] = tuple(p[1:])
+
+
+def p_save_param(p):
+    '''
+    save_param :
+    '''
+    st = SymbolTable.get()
+    st.current_params().append(flatten(p[-1])[-1])
 
 
 def p_func_call_3(p):
@@ -540,9 +599,27 @@ def p_func_call_3(p):
 
 def p_return(p):
     '''
-    return : RETURN LEFT_PARENTHESIS exp RIGHT_PARENTHESIS
+    return : RETURN LEFT_PARENTHESIS exp set_return_val RIGHT_PARENTHESIS
     '''
     p[0] = tuple(p[1:])
+
+
+def p_set_return_val(p):
+    '''
+    set_return_val :
+    '''
+    st = SymbolTable.get()
+    set_return_val(st)
+
+
+def p_set_returning_quad(p):
+    '''
+    set_returning_quad :
+    '''
+    st = SymbolTable.get()
+    returning_quad = Quad('goto', '', '', '')
+    st.quads().append(returning_quad)
+    set_return_quad(st.current_scope_name(), returning_quad)
 
 
 def p_read(p):
@@ -785,6 +862,7 @@ def p_save_func(p):
     '''
     st = SymbolTable.get()
     st.save_func()
+    save_func_to_directory(st.current_id(), len(st.quads())+1)  # +1?
 
 
 def p_push_scope(p):
