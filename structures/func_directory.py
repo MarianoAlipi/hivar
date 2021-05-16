@@ -83,6 +83,14 @@ def save_params_to_directory(st):
     func_id = st.current_scope_name()
     func_obj = st.current_scope().get_func_from_id(func_id)
     params = func_obj.params()
+
+    # will be useful if we save size
+    #total_size = 0
+    #var_objects = st.current_scope().vars()
+    # for param in params:
+    #    if param[1] in var_objects:
+    #        total_size += var_objects[param[1]].get_size()
+
     func_id = validate_existing(func_id)
     FuncDirectory[func_id]['params'] = params
 
@@ -96,4 +104,12 @@ def save_local_vars_to_directory(st):
     for key in local_vars:
         formatted_vars.append(
             (local_vars[key].name(), local_vars[key].var_type()))
+
+    # will be useful if we save size
+    #total_size = 0
+    #var_objects = st.current_scope().vars()
+    # for formatted_var in formatted_vars:
+    #    if formatted_var[0] in var_objects:
+    #        total_size += var_objects[formatted_var[0]].get_size()
+
     FuncDirectory[func_id]['local_vars'] = formatted_vars

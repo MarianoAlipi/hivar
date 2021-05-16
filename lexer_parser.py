@@ -194,8 +194,8 @@ def p_vars(p):
 
 def p_vars_1(p):
     '''
-    vars_1 : var_type COLON vars_2 vars_arr save_var SEMICOLON vars_1
-           | var_type COLON vars_2 vars_arr save_var SEMICOLON
+    vars_1 : var_type COLON vars_2 save_var vars_arr SEMICOLON vars_1
+           | var_type COLON vars_2 save_var vars_arr SEMICOLON
     '''
     p[0] = tuple(p[1:])
 
@@ -210,10 +210,30 @@ def p_vars_arr(p):
 
 def p_vars_arr_1(p):
     '''
-    vars_arr_1 : vars_arr_2 COMMA vars_arr_2
-               | vars_arr_2
+    vars_arr_1 : vars_arr_2 save_i COMMA vars_arr_2 save_j
+               | vars_arr_2 save_i
     '''
     p[0] = tuple(p[1:])
+
+
+def p_save_j(p):
+    '''
+    save_j :
+    '''
+    st = SymbolTable.get()
+    var_id = [*st.current_scope().vars()][-1]
+    var_object = st.current_scope().vars()[var_id]
+    var_object.set_j(p[-1])
+
+
+def p_save_i(p):
+    '''
+    save_i :
+    '''
+    st = SymbolTable.get()
+    var_id = [*st.current_scope().vars()][-1]
+    var_object = st.current_scope().vars()[var_id]
+    var_object.set_i(p[-1])
 
 
 def p_vars_arr_2(p):
