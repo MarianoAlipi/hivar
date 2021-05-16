@@ -4,6 +4,15 @@ FuncDirectory = {}
 func_prefix = ''
 
 
+# dict with
+# key: func_id
+# val:
+#   dir -> quad index
+#   return -> endfunc quad
+#   return_var -> id to return
+#   params -> list of str tuples(id, type)
+#   local_vars -> st of str tuples(id, type)
+
 # INTERNAL METHODS
 
 def add_prefix(func_id):
@@ -57,7 +66,7 @@ def get_return_var_id(func_id):
 def save_func_to_directory(func_id, starting_quad_position):
     func_id = validate_new(func_id)
     FuncDirectory[func_id] = {
-        'dir': starting_quad_position, 'return': None, 'return_var': None}
+        'dir': starting_quad_position, 'return': None, 'return_var': None, 'params': None, 'local_vars': None}
 
 
 def get_func_from_directory(func_id):
@@ -67,3 +76,24 @@ def get_func_from_directory(func_id):
 
 def update_func_prefix(new_prefix):
     func_prefix = new_prefix
+
+
+def save_params_to_directory(st):
+    # rn im saving jsut the params, in the future we can use these to calculate how much space will be needed
+    func_id = st.current_scope_name()
+    func_obj = st.current_scope().get_func_from_id(func_id)
+    params = func_obj.params()
+    func_id = validate_existing(func_id)
+    FuncDirectory[func_id]['params'] = params
+
+
+def save_local_vars_to_directory(st):
+    # rn im saving just the local_vars, in the future we can use these to calculate how much space will be needed
+    local_vars = st.current_scope().vars()
+    func_id = st.current_scope_name()
+    func_id = validate_existing(func_id)
+    formatted_vars = []
+    for key in local_vars:
+        formatted_vars.append(
+            (local_vars[key].name(), local_vars[key].var_type()))
+    FuncDirectory[func_id]['local_vars'] = formatted_vars

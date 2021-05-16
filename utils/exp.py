@@ -58,9 +58,12 @@ def create_param_assignment_quads(st):
     func_name = st.current_params().pop(0)
     param_vals = st.current_params()
     function = st.current_scope().get_func_from_id(func_name)
-    param_keys = function.params()
+    param_keys = []
+    full_params = function.params()
+    for full_param in full_params:
+        param_keys.append(full_param[1])
     for i in range(len(param_keys)):
-        param_quad = Quad('=', param_vals[i], '', param_keys[i])
+        param_quad = Quad('param', param_vals[i], '', param_keys[i])
         st.quads().append(param_quad)
     func_jump = st.pending_jumps().pop()
     st.quads().append(func_jump)

@@ -8,7 +8,7 @@ A00822247
 
 from ply import lex
 from ply import yacc
-from structures.symbol_table import SymbolTable, Variable
+from structures.symbol_table import SymbolTable
 from utils.exp import *
 from utils.non_linear import *
 from utils.semantics import match_operators
@@ -17,7 +17,8 @@ from structures.stack import Stack, push_operator, pop_operator
 from reserved import reserved, tokens
 from structures.func_directory import (save_func_to_directory, get_func_from_directory,
                                        set_return_quad, set_return_quad_val,
-                                       set_return_var_id, get_return_var_id, update_func_prefix)
+                                       set_return_var_id, get_return_var_id, update_func_prefix,
+                                       save_params_to_directory, save_local_vars_to_directory)
 
 # Regular expression rules for simple tokens.
 t_COMMA = r','
@@ -100,9 +101,23 @@ precedence = (
 
 def p_program(p):
     '''
-    program : PROGRAM_KEYWORD ID SEMICOLON classes vars funcs main
+    program : PROGRAM_KEYWORD ID SEMICOLON save_main_quad classes vars funcs assign_main_quad main
     '''
     p[0] = tuple(p[1:])
+
+
+def p_assign_main_quad(p):
+    '''
+    assign_main_quad :
+    '''
+    save_main_quad(SymbolTable.get())
+
+
+def p_save_main_quad(p):
+    '''
+    save_main_quad :
+    '''
+    assign_res_to_main_quad(SymbolTable.get())
 
 
 def p_classes(p):
@@ -166,7 +181,6 @@ def p_reset_func_prefix(p):
     '''
     reset_func_prefix :
     '''
-    st = SymbolTable.get()
     update_func_prefix('')
 
 
@@ -237,10 +251,24 @@ def p_vars_2(p):
 
 def p_funcs(p):
     '''
-    funcs : FUNCTION func_type ID save_id save_func push_scope LEFT_PARENTHESIS parameters RIGHT_PARENTHESIS LEFT_CURLY vars block_1 set_returning_quad RIGHT_CURLY pop_scope SEMICOLON funcs_1
+    funcs : FUNCTION func_type ID save_id save_func push_scope LEFT_PARENTHESIS parameters save_params_to_fd RIGHT_PARENTHESIS LEFT_CURLY vars save_vars_to_fd block_1 set_returning_quad RIGHT_CURLY pop_scope SEMICOLON funcs_1
           | empty
     '''
     p[0] = tuple(p[1:])
+
+
+def p_save_vars_to_fd(p):
+    '''
+    save_vars_to_fd :
+    '''
+    save_local_vars_to_directory(SymbolTable.get())
+
+
+def p_save_params_to_fd(p):
+    '''
+    save_params_to_fd :
+    '''
+    save_params_to_directory(SymbolTable.get())
 
 
 def p_funcs_1(p):
@@ -338,16 +366,14 @@ def p_assign_func_to_var(p):
     '''
     assign_func_to_var :
     '''
-    st = SymbolTable.get()
-    assign_func_to_var(st, p)
+    assign_func_to_var(SymbolTable.get(), p)
 
 
 def p_assign_to_var(p):
     '''
     assign_to_var :
     '''
-    st = SymbolTable.get()
-    assign_to_var(st)
+    assign_to_var(SymbolTable.get())
 
 
 def p_set_var_to_assign(p):
@@ -546,16 +572,11 @@ def p_set_return_quad_val(p):
     set_return_quad_val :
     '''
     st = SymbolTable.get()
-    func_jump = Quad('goto', None, None, get_func_from_directory(p[-1]))
+    func_jump = Quad('gosub', None, None, get_func_from_directory(p[-1]))
     st.pending_jumps().push(func_jump)
     # clear params
     st.reset_current_params()
     st.current_params().append(p[-1])
-
-    function = st.current_scope().get_func_from_id(p[-1])
-    # +1 porque es el sig del counter, antes lo poniamos dentro del set reutrn quad val
-    param_cant = len(function.params()) + 2
-    set_return_quad_val(p[-1], len(st.quads())+param_cant)
 
 
 def p_func_call_1(p):
@@ -570,8 +591,7 @@ def p_assign_params(p):
     '''
     assign_params :
     '''
-    st = SymbolTable.get()
-    create_param_assignment_quads(st)
+    create_param_assignment_quads(SymbolTable.get())
 
 
 def p_func_call_2(p):
@@ -608,8 +628,7 @@ def p_set_return_val(p):
     '''
     set_return_val :
     '''
-    st = SymbolTable.get()
-    set_return_val(st)
+    set_return_val(SymbolTable.get())
 
 
 def p_set_returning_quad(p):
@@ -617,7 +636,7 @@ def p_set_returning_quad(p):
     set_returning_quad :
     '''
     st = SymbolTable.get()
-    returning_quad = Quad('goto', '', '', '')
+    returning_quad = Quad('endfunc', '', '', '')
     st.quads().append(returning_quad)
     set_return_quad(st.current_scope_name(), returning_quad)
 
@@ -643,7 +662,6 @@ def p_read_expression(p):
     st = SymbolTable.get()
     quad = Quad('read', '', '', p[-1])
     st.quads().append(quad)
-    # TODO read
 
 
 def p_read_2(p):
@@ -677,7 +695,6 @@ def p_write_expression(p):
     st = SymbolTable.get()
     quad = Quad('write', '', '', to_write)
     st.quads().append(quad)
-    # TODO write
 
 
 def p_write_2(p):
@@ -715,32 +732,28 @@ def p_create_if_escape(p):
     '''
     create_if_escape :
     '''
-    st = SymbolTable.get()
-    create_if_escape(st)
+    create_if_escape(SymbolTable.get())
 
 
 def p_create_gotof(param):
     '''
     create_gotof :
     '''
-    st = SymbolTable.get()
-    create_gotof(st)
+    create_gotof(SymbolTable.get())
 
 
 def p_create_goto(param):
     '''
     create_goto :
     '''
-    st = SymbolTable.get()
-    create_goto(st)
+    create_goto(SymbolTable.get())
 
 
 def p_decision_end(param):
     '''
     decision_end :
     '''
-    st = SymbolTable.get()
-    decision_end(st)
+    decision_end(SymbolTable.get())
 
 
 def p_cond_loop(p):
@@ -754,24 +767,21 @@ def p_fill_gotof_while(p):
     '''
     fill_gotof_while :
     '''
-    st = SymbolTable.get()
-    fill_gotof_while(st)
+    fill_gotof_while(SymbolTable.get())
 
 
 def p_eval_while_exp(p):
     '''
     eval_while_exp :
     '''
-    st = SymbolTable.get()
-    eval_while_exp(st)
+    eval_while_exp(SymbolTable.get())
 
 
 def p_push_while(p):
     '''
     push_while :
     '''
-    st = SymbolTable.get()
-    push_while(st)
+    push_while(SymbolTable.get())
 
 
 def p_non_cond_loop(p):
@@ -785,24 +795,21 @@ def p_restart_loop(p):
     '''
     restart_loop :
     '''
-    st = SymbolTable.get()
-    restart_loop(st)
+    restart_loop(SymbolTable.get())
 
 
 def p_save_for_cond_quad(p):
     '''
     save_for_cond_quad :
     '''
-    st = SymbolTable.get()
-    save_cond_for_quad(st)
+    save_cond_for_quad(SymbolTable.get())
 
 
 def p_save_for_assgn_quad(p):
     '''
     save_for_assgn_quad :
     '''
-    st = SymbolTable.get()
-    save_for_assgn_quad(st)
+    save_for_assgn_quad(SymbolTable.get())
 
 
 def p_push_for_id(p):
@@ -862,7 +869,7 @@ def p_save_func(p):
     '''
     st = SymbolTable.get()
     st.save_func()
-    save_func_to_directory(st.current_id(), len(st.quads())+1)  # +1?
+    save_func_to_directory(st.current_id(), len(st.quads())+1)
 
 
 def p_push_scope(p):
