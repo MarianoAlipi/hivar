@@ -5,6 +5,7 @@ class Variable:
         self.__name = name
         self.__type = var_type
         self.__value = None
+        self.__dims = None
 
     def name(self):
         return self.__name
@@ -14,6 +15,24 @@ class Variable:
 
     def value(self):
         return self.__value
+
+    def dims(self):
+        return self.__dims
+
+    def set_i(self, i):
+        self.__dims = i
+
+    def set_j(self, j):
+        self.__dims = (self.dims(), j)
+
+    def get_size(self):
+        dims = self.dims()
+        if not dims:
+            return 1
+        elif type(dims) is tuple:
+            return dims[0] * dims[1]
+        else:
+            return dims
 
 
 class Function:
