@@ -106,3 +106,16 @@ def save_for_assgn_quad(st):
     exp_val = st.operands().pop()
     quad = Quad('=', exp_val, None, st.for_ids().top())
     st.quads().append(quad)
+
+# main
+
+
+def save_main_quad(st):
+    gotomain_quad = st.pending_jumps().pop()
+    gotomain_quad.set_res(len(st.quads()) + 1)
+
+
+def assign_res_to_main_quad(st):
+    gotomain_quad = Quad('goto', '', '', '')
+    st.pending_jumps().push(gotomain_quad)
+    st.quads().append(gotomain_quad)
