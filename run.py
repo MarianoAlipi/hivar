@@ -1,6 +1,7 @@
 from lexer_parser import lexer, parser
 from file_manager import get_file_content
 from structures.symbol_table import SymbolTable
+from virtual_machine import VirtualMachine
 
 DEBUG_MODE = 0
 
@@ -18,3 +19,7 @@ except SyntaxError as e:
 st = SymbolTable.get()
 st.print_quads()
 breakpoint()
+
+# Virtual machine
+vm = VirtualMachine.get()
+vm.execute(st)
