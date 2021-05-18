@@ -1,4 +1,3 @@
-import re
 from structures.stack import Stack
 
 class VirtualMachine:
@@ -128,10 +127,9 @@ class VirtualMachine:
                 # Do nothing (it's already handled).
                 print(f'{operator}: already handled')
             else:
-                val = self.actions[operator](self, st, left, right, result)
-                print(f'{operator}: {val}')
                 try:
-                    print('', end='')
+                    val = self.actions[operator](self, st, left, right, result)
+                    print(f'{operator}: {val}')
                 except:
                     print(f'{operator} not yet implemented. Skipping!')
 
