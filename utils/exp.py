@@ -1,7 +1,6 @@
 from utils.semantics import match_operators
 from structures.quadruples import Quad
-from structures.func_directory import get_return_var_id
-from structures.func_directory import set_return_var_id
+from structures.func_directory import get_return_var_id, set_return_var_id, save_temp_var_to_directory
 # evals
 
 
@@ -13,7 +12,7 @@ def eval_exp_or_term(st):
     operator = st.operators().pop()
 
     res_type = match_operators(left_type, right_type, operator)
-    temp_var_name = get_temp_var_name(st)
+    temp_var_name = get_temp_var_name(st, res_type)
     #print(f'{left_op}.{left_type} {operator} {right_op}.{right_type} = {temp_var_name}.{res_type}')
     st.save_temp_var(temp_var_name, res_type)
 
@@ -80,9 +79,10 @@ def set_return_val(st):
 # utils
 
 
-def get_temp_var_name(st):
+def get_temp_var_name(st, temp_type):
     temp_var_name = f't_{st.t_counter()}'
     st.add_to_t_counter()
+    save_temp_var_to_directory(st, temp_var_name, temp_type)
     return temp_var_name
 
 

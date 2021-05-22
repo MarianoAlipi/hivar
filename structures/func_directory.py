@@ -113,3 +113,9 @@ def save_local_vars_to_directory(st):
     #        total_size += var_objects[formatted_var[0]].get_size()
 
     FuncDirectory[func_id]['local_vars'] = formatted_vars
+
+
+def save_temp_var_to_directory(st, var_name, var_type):
+    func_id = st.current_scope_name()
+    func_id = validate_existing(func_id)
+    FuncDirectory[func_id]['local_vars'].append((var_name, var_type))
