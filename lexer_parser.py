@@ -125,7 +125,7 @@ def p_save_main_quad(p):
 
 def p_classes(p):
     '''
-    classes : CLASS_KEYWORD ID save_class push_scope inheritance LEFT_CURLY attributes methods RIGHT_CURLY pop_scope SEMICOLON classes
+    classes : CLASS_KEYWORD ID save_class push_scope LEFT_CURLY attributes methods RIGHT_CURLY pop_scope SEMICOLON classes
             | empty
     '''
     p[0] = tuple(p[1:])
@@ -138,14 +138,6 @@ def p_save_class(p):
     st = SymbolTable.get()
     st.set_curr_id(p[-1])
     st.add_class(p[-1])
-
-
-def p_inheritance(p):
-    '''
-    inheritance : INHERITS ID
-                | empty
-    '''
-    p[0] = tuple(p[1:])
 
 
 def p_attributes(p):
@@ -412,11 +404,53 @@ def p_set_var_to_assign(p):
 
 def p_variable(p):
     '''
-    variable : ID LEFT_BRACKET exp COMMA exp RIGHT_BRACKET
+    variable : ID save_var_id_for_dims LEFT_BRACKET exp verify_rows COMMA exp verify_cols RIGHT_BRACKET
+             | ID save_var_id_for_dims LEFT_BRACKET exp verify_arr_rows RIGHT_BRACKET
              | ID PERIOD ID
              | ID set_var_as_curr
     '''
     p[0] = tuple(p[1:])
+
+
+def p_save_var_id_for_dims(p):
+    '''
+    save_var_id_for_dims :
+    '''
+    st = SymbolTable.get()
+    st.var_to_assign().push(p[-1])
+
+
+def p_verify_arr_rows(p):
+    '''
+    verify_arr_rows :
+    '''
+    st = SymbolTable.get()
+    curr_id = st.var_to_assign().pop()
+    curr_var = st.current_scope().get_var_from_id(curr_id)
+    verify_quad = Quad('verify', st.operands().pop(), '', curr_var.i())
+    st.quads().append(verify_quad)
+
+
+def p_verify_rows(p):
+    '''
+    verify_rows :
+    '''
+    st = SymbolTable.get()
+    curr_id = st.var_to_assign().top()
+    curr_var = st.current_scope().get_var_from_id(curr_id)
+    verify_quad = Quad('verify', st.operands().pop(), '', curr_var.i())
+    st.quads().append(verify_quad)
+
+
+def p_verify_cols(p):
+    '''
+    verify_cols :
+    '''
+    st = SymbolTable.get()
+    curr_id = st.var_to_assign().pop()
+    curr_var = st.current_scope().get_var_from_id(curr_id)
+    verify_quad = Quad('verify', st.operands().pop(), '', curr_var.j())
+    st.quads().append(verify_quad)
 
 
 def p_set_var_as_curr(p):
@@ -730,10 +764,23 @@ def p_write_expression(p):
     '''
     write_expression :
     '''
+    # TODOWRITE maybe no es flatten? guardar un 0 o 1 dependiendo si es banner o variable?
     to_write = flatten(p[-1])
     st = SymbolTable.get()
     quad = Quad('write', '', '', to_write)
     st.quads().append(quad)
+
+# el codigo
+    #write('matrix[B,A]', matrix[B,A]);
+# saca estos quads
+    # 12 verify B  10
+    # 13 verify A  5
+    # 14 write   ('matrix', '[', 'B', ',', 'A', ']')
+    # 15 verify B  10
+    # 16 verify A  5
+    # 17 write   ('matrix', '[', 'B', ',', 'A', ']')
+# lo bueno: si gaurda dos separados
+# lo malo: no separamos entre banners o vars, una ves teniendo esto es de mover el execute a que imprima segun si es banner o var
 
 
 def p_write_2(p):

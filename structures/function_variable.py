@@ -25,6 +25,24 @@ class Variable:
     def set_j(self, j):
         self.__dims = (self.dims(), j)
 
+    def i(self):
+        dims = self.dims()
+        if not dims:
+            raise Exception(f'trying to access i for atomic var {self.__name}')
+        elif type(dims) is tuple:
+            return dims[0]
+        else:
+            return dims
+
+    def j(self):
+        dims = self.dims()
+        if not dims:
+            raise Exception(f'trying to access j for atomic var {self.__name}')
+        elif type(dims) is tuple:
+            return dims[1]
+        else:
+            raise Exception(f'trying to access j for array var {self.__name}')
+
     def get_size(self):
         dims = self.dims()
         if not dims:
