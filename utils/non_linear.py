@@ -2,7 +2,7 @@
 from structures.quadruples import Quad
 from structures.semantics_cube import BOOL
 from utils.exp import get_temp_var_name
-
+from structures.func_directory import set_starting_quad_to_func, get_return_var_id
 # if else
 
 
@@ -114,9 +114,19 @@ def save_for_assgn_quad(st):
 def save_main_quad(st):
     gotomain_quad = st.pending_jumps().pop()
     gotomain_quad.set_res(len(st.quads()) + 1)
+    set_starting_quad_to_func('global', len(st.quads()) + 1)
 
 
 def assign_res_to_main_quad(st):
-    gotomain_quad = Quad('goto', '', '', '')
+    gotomain_quad = Quad('gotomain', '', '', '')
     st.pending_jumps().push(gotomain_quad)
     st.quads().append(gotomain_quad)
+
+# functions
+
+
+def save_func_call_operand(st):
+    st.operands().push(get_return_var_id(st.current_scope_name()))
+    curr_var = st.current_scope().get_var_from_id(
+        get_return_var_id(st.current_scope_name()))
+    st.op_types().push(curr_var.var_type())

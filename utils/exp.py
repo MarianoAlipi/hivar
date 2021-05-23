@@ -71,11 +71,17 @@ def create_param_assignment_quads(st):
 def set_return_val(st):
     function_type = st.current_scope().get_func_from_id(
         st.current_scope_name()).return_type()
-    var_type = st.current_scope().get_var_from_id(st.operands().top()).var_type()
+    try:
+        var_type = st.current_scope().get_var_from_id(st.operands().top()).var_type()
+    except Exception as err:
+        print(err)
+        breakpoint()
     if function_type != var_type:
         raise Exception(
             f'Problem while returning val for function {st.current_scope_name()} types do not match. function_type: {function_type}, var_type: {var_type}')
-    set_return_var_id(st.current_scope_name(), st.operands().top())
+    return_quad = Quad('return', '', '', st.operands().top())
+    st.quads().append(return_quad)
+    set_return_var_id(st.current_scope_name(), st.operands().pop())
 # utils
 
 

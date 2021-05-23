@@ -69,6 +69,11 @@ def save_func_to_directory(func_id, starting_quad_position):
         'dir': starting_quad_position, 'return': None, 'return_var': None, 'params': None, 'local_vars': None}
 
 
+def set_starting_quad_to_func(func_id, starting_quad_position):
+    func_id = validate_existing(func_id)
+    FuncDirectory[func_id]['dir'] = starting_quad_position
+
+
 def get_func_from_directory(func_id):
     func_id = validate_existing(func_id)
     return FuncDirectory[func_id]['dir']
@@ -119,3 +124,8 @@ def save_temp_var_to_directory(st, var_name, var_type):
     func_id = st.current_scope_name()
     func_id = validate_existing(func_id)
     FuncDirectory[func_id]['local_vars'].append((var_name, var_type))
+
+
+def get_local_vars_from_id(func_id):
+    func_id = validate_existing(func_id)
+    return FuncDirectory[func_id]['local_vars']

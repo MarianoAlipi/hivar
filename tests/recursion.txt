@@ -1,0 +1,25 @@
+program recursion;
+
+hivar
+    int : i, j, p;
+byevar
+
+function int fact (int : j) {
+    hivar
+        int : i;
+    byevar
+
+    if (j == 0) {
+        return (i);
+    } else {
+        return (j * fact(j - 2));
+    };
+    
+};
+
+
+main() {
+    j = 10;
+    i = fact(j);
+    write(i);
+};

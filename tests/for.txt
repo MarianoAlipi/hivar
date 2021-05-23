@@ -6,10 +6,13 @@ byevar
 
 
 main() {
+    B = 2;
+    C = 1;
     from A = 1 to 10 do {
         B = B + 1;
         from B = 2 to 5 do {
             C = C + 1;
+            write(C);
         };
     };
 };
