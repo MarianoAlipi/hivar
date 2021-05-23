@@ -35,6 +35,12 @@ class VirtualMachine:
                 print('AAAAA', quads[self.instruction_pointer()].print(), err)
                 breakpoint()
 
+    def set_func_params(self, params):
+        self.__func_params = params
+
+    def get_func_params(self):
+        return self.__func_params
+
     def __init__(self):
         if VirtualMachine.__instance:
             raise Exception(
@@ -44,3 +50,4 @@ class VirtualMachine:
             self.__ip = 0
             self.__execution_stack = Stack()
             self.__quads = st.quads()
+            self.__func_params = []

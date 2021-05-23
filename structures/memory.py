@@ -57,17 +57,18 @@ class MemoryChunk:
         if var_id in chars:
             return chars[var_id]
 
-    def init_address(self, var_id, address_type):
+    def init_address(self, var_id, address_type, scope):
         try:
             # consige el arr de ese tipo
             assigned_address = self.get_vars(address_type)
 
             # ponle de valor, la direccion de memoria
-            memory_index = ranges['global'][address_type]
+            # TODO: should this be hardcoded to 'global'?
+            memory_index = ranges[scope][address_type]
             assigned_address[var_id] = memory_index
 
             # sube el index de la dir de memoria
-            ranges['global'][address_type] = memory_index + 1
+            ranges[scope][address_type] = memory_index + 1
 
             # seteala vacia pq solo las famos de alta
             literal_memory[memory_index] = None
@@ -160,6 +161,9 @@ class Memory:
         ctes = self.get_constants()
         ctes.init_address(constant, constant_type)
         ctes.set_cte_val_for_id(constant, constant)
+
+    def get_locals_stack(self):
+        return self.__locals
 
     def __init__(self):
         if Memory.__instance:
