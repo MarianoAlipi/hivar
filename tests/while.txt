@@ -6,6 +6,8 @@ byevar
 
 
 main() {
+    A = 1;
+    B = 10;
     while(A>B) do {
         A = A + 1;
     };

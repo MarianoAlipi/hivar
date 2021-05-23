@@ -608,7 +608,7 @@ def p_set_return_quad_val(p):
     set_return_quad_val :
     '''
     st = SymbolTable.get()
-    func_jump = Quad('gosub', None, None, get_func_from_directory(p[-1]))
+    func_jump = Quad('gosub', None, None, p[-1])
     st.pending_jumps().push(func_jump)
     # clear params
     st.reset_current_params()

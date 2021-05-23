@@ -1,5 +1,5 @@
-from structures.memory import Memory, MemoryChunk
-from structures.func_directory import get_local_vars_from_id, FuncDirectory
+from structures.memory import Memory, MemoryChunk, print_literal_memory
+from structures.func_directory import get_local_vars_from_id, FuncDirectory, get_func_from_directory
 
 
 def is_cte(operand):
@@ -20,24 +20,22 @@ def init_memory(memory, func_id):
     else:
         local_mem = MemoryChunk()
         for var in new_vars:
-            # TODO: check init_address because it's hardcoded to 'global' memory ranges
             local_mem.init_address(var[0], var[1], 'local')
-        memory.get_locals_stack().push(local_mem)
+        memory.locals_memory_stack().push(local_mem)
 
 
 def process_quad(vm, quad):
     op, left, right, res = quad.unpack()
 
     memory = Memory.get()
-    global_mem = memory.get_global_memory()
     if op == '=':
         if is_cte(left):
-            global_mem.set_cte_val_for_id(res, left)
+            memory.active_memory().set_cte_val_for_id(res, left)
         else:
-            global_mem.set_val_for_id(res, left)
+            memory.active_memory().set_val_for_id(res, left)
         vm.point_to_next_quad()
     elif op in ['+', '-', '/', '*', '<', '>', '==', '!=', '<=', '>=', '&&', '||']:
-        global_mem.solve_quad(op, res, left, right)
+        memory.active_memory().solve_quad(op, res, left, right)
         vm.point_to_next_quad()
     elif op == 'goto':
         vm.set_instruction_pointer(res)
@@ -45,43 +43,57 @@ def process_quad(vm, quad):
         vm.set_instruction_pointer(res)
         init_memory(memory, 'global')
     elif op == 'gotof':
-        comparison_value = global_mem.get_value(left)
+        comparison_value = memory.active_memory().get_value(left)
         if comparison_value == False:
             vm.set_instruction_pointer(res)
         else:
             vm.point_to_next_quad()
     elif op == 'write':
-        print(global_mem.get_value(res[0]))
+        print(memory.active_memory().get_value(res[0]))
         vm.point_to_next_quad()
     elif op == 'read':
         user_input = input('>>> ')
-        global_mem.set_cte_val_for_id(res, user_input)
+        memory.active_memory().set_cte_val_for_id(res, user_input)
         vm.point_to_next_quad()
     elif op == 'gosub':
-        # TODO
-        # crear mnemoria local usando funcdir['local_vars'] tiene todas, las iteras y las creAS igUAL QUE como creamos las globales
-        # pasar params, crear array params en virtual_machine guardar ahi en lo que sales del scope global y entras al local
-        # protip: locales estan
-        # vm.set_instruction_pointer(res)
-        # return es como un params pero alrevez
+        # +2 porque +1 te apunta al quad que lees ahorita, y otro +1 después de endfunc quieres ir a sig quad
+        vm.jump_stack().push(vm.instruction_pointer()+2)
 
-        vm.set_instruction_pointer(res)
-        # TODO: find the func_id in a more efficient way
-        func_id = ''
-        for key in FuncDirectory:
-            if FuncDirectory[key]['dir'] == res:
-                func_id = res
-        
-        if func_id == '':
-            raise Exception('Function at address {res} not found in FuncDirectory.')
-
-        vm.set_func_params(FuncDirectory[func_id]['params'])
-        init_memory(memory, func_id)
+        func_start = get_func_from_directory(res)
+        vm.set_instruction_pointer(func_start)
+        init_memory(memory, res)
+        assign_params(vm, memory, res)
+        vm.clear_func_params()
+    elif op == 'param':
+        param_address = memory.active_memory().find_address(left)
+        vm.add_func_param(param_address)
+        vm.point_to_next_quad()
     elif op == 'return':
-        # TODO: all of this
-        # How to get func_id?
-        vm.set_func_params(FuncDirectory[func_id]['params'])
+        res_address = memory.active_memory().find_address(res)
+        res_value = memory.get_value_from_address(res_address)
+        vm.execution_stack().push(res_value)
+        vm.point_to_next_quad()
+    elif op == 'endfunc':
+        vm.set_instruction_pointer(vm.jump_stack().pop())
+        memory.locals_memory_stack().pop()
+    elif op == 'returnassignTODO':
+        # returnassignTODO left  res
+        res_address = memory.active_memory().find_address(res)
+        res_value = vm.execution_stack().pop()
+        memory.assign_value_to_address(res_value, res_address)
+        vm.point_to_next_quad()
     else:
         breakpoint()
         quad.print()
         vm.point_to_next_quad()
+
+
+def assign_params(vm, memory, func_id):
+    params_to_assign = FuncDirectory[func_id]['params']
+    where_params_are = vm.get_func_params()
+    for i in range(0, len(params_to_assign)):
+        address_to_fill = memory.active_memory(
+        ).find_address(params_to_assign[i][1])
+        value_to_fill_with = memory.get_value_from_address(
+            where_params_are[i])
+        memory.assign_value_to_address(value_to_fill_with, address_to_fill)

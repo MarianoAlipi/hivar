@@ -35,11 +35,20 @@ class VirtualMachine:
                 print('AAAAA', quads[self.instruction_pointer()].print(), err)
                 breakpoint()
 
-    def set_func_params(self, params):
-        self.__func_params = params
+    def add_func_param(self, param):
+        self.__func_params.append(param)
 
     def get_func_params(self):
         return self.__func_params
+
+    def clear_func_params(self):
+        self.__func_params = []
+
+    def jump_stack(self):
+        return self.__jump_stack
+
+    def execution_stack(self):
+        return self.__execution_stack
 
     def __init__(self):
         if VirtualMachine.__instance:
@@ -51,3 +60,4 @@ class VirtualMachine:
             self.__execution_stack = Stack()
             self.__quads = st.quads()
             self.__func_params = []
+            self.__jump_stack = Stack()

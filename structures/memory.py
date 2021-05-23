@@ -21,6 +21,10 @@ ranges = {
 literal_memory = {}
 
 
+def print_literal_memory():
+    print(literal_memory)
+
+
 class MemoryChunk:
     def __init__(self, memory_size=SIZE):
         self.__int = {}
@@ -159,11 +163,28 @@ class Memory:
 
     def add_constant(self, constant, constant_type):
         ctes = self.get_constants()
-        ctes.init_address(constant, constant_type)
+        ctes.init_address(constant, constant_type, 'global')
         ctes.set_cte_val_for_id(constant, constant)
 
-    def get_locals_stack(self):
+    def locals_memory_stack(self):
         return self.__locals
+
+    def active_memory(self):
+        return self.locals_memory_stack().top()
+
+    def get_value_from_address(self, address):
+        try:
+            return literal_memory[address]
+        except:
+            raise Exception(
+                f"accessing empty memory address {address}")
+
+    def assign_value_to_address(self, value, address):
+        try:
+            literal_memory[address] = value
+        except:
+            raise Exception(
+                f"assigning empty memory address {address}")
 
     def __init__(self):
         if Memory.__instance:
@@ -174,3 +195,4 @@ class Memory:
             self.__global = MemoryChunk()
             self.__ctes = MemoryChunk()
             self.__locals = Stack()
+            self.__locals.push(self.__global)
