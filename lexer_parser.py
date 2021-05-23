@@ -14,6 +14,7 @@ from utils.non_linear import *
 from utils.semantics import match_operators
 from structures.quadruples import Quad
 from structures.stack import Stack, push_operator, pop_operator
+from structures.memory import Memory
 from reserved import reserved, tokens
 from structures.func_directory import (save_func_to_directory, get_func_from_directory,
                                        set_return_quad, set_return_quad_val,
@@ -101,7 +102,7 @@ precedence = (
 
 def p_program(p):
     '''
-    program : PROGRAM_KEYWORD ID SEMICOLON save_main_quad classes vars funcs assign_main_quad main
+    program : PROGRAM_KEYWORD ID SEMICOLON save_main_quad classes vars save_vars_to_fd funcs assign_main_quad main
     '''
     p[0] = tuple(p[1:])
 
@@ -117,7 +118,9 @@ def p_save_main_quad(p):
     '''
     save_main_quad :
     '''
-    assign_res_to_main_quad(SymbolTable.get())
+    st = SymbolTable.get()
+    assign_res_to_main_quad(st)
+    save_func_to_directory('global', len(st.quads())+1)
 
 
 def p_classes(p):
@@ -516,11 +519,18 @@ def p_factor(p):
     factor : LEFT_PARENTHESIS push_operator expression RIGHT_PARENTHESIS pop_operator save_operand
            | constant save_operand
            | variable save_operand
-           | func_call save_operand
+           | func_call save_func_call_operand
            | PLUS set_constant_sign constant save_operand
            | MINUS set_constant_sign constant save_operand
     '''
     p[0] = tuple(p[1:])
+
+
+def p_save_func_call_operand(p):
+    '''
+    save_func_call_operand :
+    '''
+    save_func_call_operand(SymbolTable.get())
 
 
 def p_save_operand(p):
@@ -562,6 +572,9 @@ def p_save_int_var_as_current(p):
         st.set_curr_id(p[-1])
     st.set_constant_sign('+')
 
+    memory = Memory.get()
+    memory.add_constant(st.current_id(), 'int')
+
 
 def p_save_float_var_as_current(p):
     '''
@@ -576,6 +589,9 @@ def p_save_float_var_as_current(p):
     else:
         st.set_curr_id(p[-1])
     st.set_constant_sign('+')
+
+    memory = Memory.get()
+    memory.add_constant(st.current_id(), 'float')
 
 
 def p_func_call(p):
@@ -592,11 +608,12 @@ def p_set_return_quad_val(p):
     set_return_quad_val :
     '''
     st = SymbolTable.get()
-    func_jump = Quad('gosub', None, None, get_func_from_directory(p[-1]))
+    func_jump = Quad('gosub', None, None, p[-1])
     st.pending_jumps().push(func_jump)
     # clear params
     st.reset_current_params()
     st.current_params().append(p[-1])
+    st.operators().push('(')
 
 
 def p_func_call_1(p):
@@ -611,7 +628,9 @@ def p_assign_params(p):
     '''
     assign_params :
     '''
-    create_param_assignment_quads(SymbolTable.get())
+    st = SymbolTable.get()
+    st.operators().pop()
+    create_param_assignment_quads(st)
 
 
 def p_func_call_2(p):
@@ -621,12 +640,12 @@ def p_func_call_2(p):
     p[0] = tuple(p[1:])
 
 
-def p_save_param(p):
+def p_save_param(param):
     '''
     save_param :
     '''
     st = SymbolTable.get()
-    st.current_params().append(flatten(p[-1])[-1])
+    st.current_params().append(st.operands().pop())
 
 
 def p_func_call_3(p):
