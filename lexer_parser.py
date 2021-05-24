@@ -16,10 +16,7 @@ from structures.quadruples import Quad
 from structures.stack import Stack, push_operator, pop_operator
 from structures.memory import Memory
 from reserved import reserved, tokens
-from structures.func_directory import (save_func_to_directory, get_func_from_directory,
-                                       set_return_quad, set_return_quad_val,
-                                       set_return_var_id, get_return_var_id, update_func_prefix,
-                                       save_params_to_directory, save_local_vars_to_directory)
+from structures.func_directory import *
 
 # Regular expression rules for simple tokens.
 t_COMMA = r','
@@ -630,11 +627,27 @@ def p_save_float_var_as_current(p):
 
 def p_func_call(p):
     '''
-    func_call : ID PERIOD ID LEFT_PARENTHESIS func_call_1 RIGHT_PARENTHESIS
+    func_call : ID PERIOD ID check_if_obj_func_exists LEFT_PARENTHESIS func_call_1 RIGHT_PARENTHESIS
               | ID set_return_quad_val LEFT_PARENTHESIS func_call_1 RIGHT_PARENTHESIS
     '''
     p[0] = tuple(p[1:])
     # TODO cuando sean objetos algo tendremos que hacer con el func_prefix
+
+
+def create_era_quad(st, func_id):
+    era_quad = Quad('ERA', '', '', func_id)
+    st.quads().append(era_quad)
+
+
+def p_check_if_obj_func_exists(p):
+    '''
+    check_if_obj_func_exists :
+    '''
+    st = SymbolTable.get()
+    #func_id = st.func_prefix() + "." + p[-1]
+    func_id = p[-1]
+    function = validate_existing(func_id, True)
+    create_era_quad(st, func_id)
 
 
 def p_set_return_quad_val(p):
@@ -642,12 +655,17 @@ def p_set_return_quad_val(p):
     set_return_quad_val :
     '''
     st = SymbolTable.get()
-    func_jump = Quad('gosub', None, None, p[-1])
+    func_id = p[-1]
+    if not validate_existing(func_id, True):
+        raise Exception(
+            f"Function {func_id} not found in scope {st.current_scope_name()}")
+    func_jump = Quad('gosub', None, None, func_id)
     st.pending_jumps().push(func_jump)
     # clear params
     st.reset_current_params()
-    st.current_params().append(p[-1])
+    st.current_params().append(func_id)
     st.operators().push('(')
+    create_era_quad(st, func_id)
 
 
 def p_func_call_1(p):

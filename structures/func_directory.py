@@ -15,24 +15,27 @@ func_prefix = ''
 
 # INTERNAL METHODS
 
-def add_prefix(func_id):
+def prefix(func_id):
     # manages func prefix for functions inside classes, empty if global scope
     #  Persona.   +    func_id
     return func_prefix + func_id
 
 
-def validate_existing(func_id):
-    if func_id not in FuncDirectory:
-        raise Exception(
-            f'Function "{func_id}" not in funcdirectory')
-    return add_prefix(func_id)
+def validate_existing(func_id, continue_execution=False):
+    if prefix(func_id) not in FuncDirectory:
+        if continue_execution:
+            return False
+        else:
+            raise Exception(
+                f'Function "{func_id}" not in funcdirectory')
+    return prefix(func_id)
 
 
 def validate_new(func_id):
-    if func_id in FuncDirectory:
+    if prefix(func_id) in FuncDirectory:
         raise Exception(
             f'Function "{func_id}" already in funcdirectory')
-    return add_prefix(func_id)
+    return prefix(func_id)
 
 # USED FOR DEBUGGING ONLY
 
@@ -81,6 +84,10 @@ def get_func_from_directory(func_id):
 
 def update_func_prefix(new_prefix):
     func_prefix = new_prefix
+
+
+def get_params_from_func_id(func_id):
+    return FuncDirectory[func_id]['params']
 
 
 def save_params_to_directory(st):

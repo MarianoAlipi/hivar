@@ -20,6 +20,8 @@ ranges = {
 
 literal_memory = {}
 
+# from structures.memory import print_literal_memory, literal_memory
+
 
 def print_literal_memory():
     print(literal_memory)
