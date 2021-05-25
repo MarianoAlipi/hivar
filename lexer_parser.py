@@ -771,8 +771,8 @@ def p_write(p):
 
 def p_write_1(p):
     '''
-    write_1 : expression write_expression write_2
-            | CONST_STRING write_expression write_2
+    write_1 : expression write_expression
+            | CONST_STRING write_expression
     '''
     p[0] = tuple(p[1:])
 
@@ -781,8 +781,14 @@ def p_write_expression(p):
     '''
     write_expression :
     '''
-    # TODOWRITE maybe no es flatten? guardar un 0 o 1 dependiendo si es banner o variable?
-    to_write = flatten(p[-1])
+    # TODOWRITE
+    to_write = ''
+    print('\n=====')
+    if type(p[-1]) == str:
+        to_write = p[-1]
+    elif type(p[-1] == tuple):
+        # TODOWRITE we should make quads for an 'exp' in a write(), evaluate it and save to a temp variable
+        to_write = flatten(p[-1])
     st = SymbolTable.get()
     quad = Quad('write', '', '', to_write)
     st.quads().append(quad)
@@ -798,14 +804,6 @@ def p_write_expression(p):
     # 17 write   ('matrix', '[', 'B', ',', 'A', ']')
 # lo bueno: si gaurda dos separados
 # lo malo: no separamos entre banners o vars, una ves teniendo esto es de mover el execute a que imprima segun si es banner o var
-
-
-def p_write_2(p):
-    '''
-    write_2 : COMMA write_1
-            | empty
-    '''
-    p[0] = tuple(p[1:])
 
 
 def p_decision(p):

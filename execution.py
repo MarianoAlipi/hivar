@@ -56,6 +56,7 @@ def process_quad(vm, quad):
 
         # TODOWRITE checar si es un banner (solo print) o si es un val (consulta)
             print(memory.active_memory().get_value(res[0]))
+            breakpoint()
             vm.point_to_next_quad()
         elif op == 'read':
             user_input = input('>>> ')
