@@ -81,9 +81,8 @@ def t_newline(t):
 
 
 def t_error(t):
-    print(f'Unexpected character at line {t.lineno}: {t.value}')
-    t.lexer.skip(1)
-    pass
+    print(f'Unexpected character at line {t.lineno}: {t.value[0]}\n└─ context: {t.value}\n')
+
 
 #############
 ## GRAMMAR ##

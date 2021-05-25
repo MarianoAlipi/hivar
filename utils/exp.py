@@ -35,7 +35,7 @@ def assign_to_var(st):
     res_var_type = st.current_scope().get_var_from_id(res_var).var_type()
     if res_var_type != left_type:
         raise Exception(
-            f'Problem while assigning var {res_var} types do not match.left_op: {left_op}, right_op: {right_op}, operator: {operator}. Error: {err}')
+            f'Problem while assigning var {res_var}: types do not match. left_op: {left_op}, res_var_type: {res_var_type}, operator: {operator}')
     quad = Quad(operator, left_op, right_op, res_var)
     st.quads().append(quad)
 
@@ -47,7 +47,7 @@ def assign_func_to_var(st, p):
     func_return_type = st.current_scope().funcs()[func_id].return_type()
     if res_var_type != func_return_type:
         raise Exception(
-            f'Problem while assigning var {res_var} types do not match.res_var: {res_var}, func: {func_id}, func_return_type: {func_return_type}')
+            f'Problem while assigning var {res_var}: types do not match. res_var: {res_var}, func: {func_id}, func_return_type: {func_return_type}')
     quad = Quad('ASSGN', res_var, '', func_id)
     st.quads().append(quad)
 
@@ -95,6 +95,7 @@ def set_return_val(st):
     return_quad = Quad('return', '', '', st.operands().top())
     st.quads().append(return_quad)
     set_return_var_id(st.current_scope_name(), st.operands().pop())
+
 # utils
 
 
