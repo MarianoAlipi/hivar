@@ -56,6 +56,7 @@ def process_quad(vm, quad):
 
             # TODOWRITE checar si es un banner (solo print) o si es un val (consulta)
             print(memory.active_memory().get_value(res[0]))
+            breakpoint()
             vm.point_to_next_quad()
         elif op == 'read':
             user_input = input('>>> ')
@@ -96,8 +97,8 @@ def process_quad(vm, quad):
             res_value = memory.active_memory().get_value(left)
             if res_value >= res:
                 raise Exception(
-                    f"Out of bounds: {left} has a value of {res_value}, " +
-                    f"must be below {res}")
+                    f'Out of bounds: {left} has a value of {res_value}, ' +
+                    f'must be between 0 and {res}')
             vm.point_to_next_quad()
         else:
             breakpoint()
@@ -105,7 +106,7 @@ def process_quad(vm, quad):
             vm.point_to_next_quad()
     except Exception as err:
         quad.print()
-        print('error en process_quad', err)
+        print('error en process_quad:', err)
         breakpoint()
 
 

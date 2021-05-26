@@ -13,5 +13,10 @@ main() {
     while(A>B) do {
         A = A + 1;
     };
-    write('matrix[B,A]', matrix[B,A]);
+    write("A");
+    write(A);
+    write("B");
+    write(B);
+    write("matrix[B,A]");
+    write(matrix[B,A]);
 };

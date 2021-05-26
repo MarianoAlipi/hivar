@@ -21,7 +21,7 @@ st.print_quads()
 try:
     vm = VirtualMachine.get()
     vm.execute_quads()
-    print('succesfull execution')
+    print('Successful execution.')
 except Exception as err:
     raise Exception(
         f'Something went wrong during the execution: {err}'
