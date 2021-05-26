@@ -44,7 +44,7 @@ def assign_func_to_var(st, p):
     res_var = st.var_to_assign().pop()
     res_var_type = st.current_scope().get_var_from_id(res_var).var_type()
     func_id = p[-1][0]
-    func_return_type = st.current_scope().funcs()[func_id].return_type()
+    func_return_type = st.current_scope().get_func_from_id(func_id).return_type()
     if res_var_type != func_return_type:
         raise Exception(
             f'Problem while assigning var {res_var} types do not match.res_var: {res_var}, func: {func_id}, func_return_type: {func_return_type}')

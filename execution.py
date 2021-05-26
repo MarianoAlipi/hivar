@@ -52,9 +52,9 @@ def process_quad(vm, quad):
             else:
                 vm.point_to_next_quad()
         elif op == 'write':
-            breakpoint()
+            # breakpoint()
 
-        # TODOWRITE checar si es un banner (solo print) o si es un val (consulta)
+            # TODOWRITE checar si es un banner (solo print) o si es un val (consulta)
             print(memory.active_memory().get_value(res[0]))
             vm.point_to_next_quad()
         elif op == 'read':
@@ -69,9 +69,9 @@ def process_quad(vm, quad):
         elif op == 'gosub':
             # +2 porque +1 te apunta al quad que lees ahorita, y otro +1 después de endfunc quieres ir a sig quad
             vm.jump_stack().push(vm.instruction_pointer()+2)
-
             func_start = get_func_from_directory(res)
             vm.set_instruction_pointer(func_start)
+
             assign_params(vm, memory, res)
             vm.clear_func_params()
             memory.locals_memory_stack().push(vm.execution_stack().pop())
@@ -87,9 +87,8 @@ def process_quad(vm, quad):
         elif op == 'endfunc':
             vm.set_instruction_pointer(vm.jump_stack().pop())
             memory.locals_memory_stack().pop()
-        elif op == 'returnassignTODO':
-            # returnassignTODO left  res
-            res_address = memory.active_memory().find_address(res)
+        elif op == 'ASSGN':
+            res_address = memory.active_memory().find_address(left)
             res_value = vm.execution_stack().pop()
             memory.assign_value_to_address(res_value, res_address)
             vm.point_to_next_quad()
@@ -99,9 +98,6 @@ def process_quad(vm, quad):
                 raise Exception(
                     f"Out of bounds: {left} has a value of {res_value}, " +
                     f"must be below {res}")
-            vm.point_to_next_quad()
-        elif op == "ASSGN":
-            breakpoint()
             vm.point_to_next_quad()
         else:
             breakpoint()
@@ -117,8 +113,7 @@ def assign_params(vm, memory, func_id):
     params_to_assign = FuncDirectory[func_id]['params']
     where_params_are = vm.get_func_params()
     for i in range(0, len(params_to_assign)):
-        address_to_fill = memory.active_memory(
+        address_to_fill = vm.execution_stack().top(
         ).find_address(params_to_assign[i][1])
-        value_to_fill_with = memory.get_value_from_address(
-            where_params_are[i])
+        value_to_fill_with = memory.get_value_from_address(where_params_are[i])
         memory.assign_value_to_address(value_to_fill_with, address_to_fill)

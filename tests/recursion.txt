@@ -8,11 +8,12 @@ function int fact (int : j) {
     hivar
         int : i;
     byevar
-
+    
     if (j == 0) {
-        return (i);
+        return (1);
     } else {
-        return (j * fact(j - 2));
+        i = fact(j - 2);
+        return (j * i);
     };
     
 };

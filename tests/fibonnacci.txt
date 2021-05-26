@@ -1,0 +1,44 @@
+program fibonacci;
+hivar
+    int : result;
+byevar
+
+function int fibRecursivo (int : n) {
+    hivar
+        int : temp1, temp2;
+    byevar
+
+    if (n == 0) {
+        return (0);
+    } elsif (n == 1) {
+        return (1);
+    } else {
+        temp1 = fibRecursivo(n - 1);
+        temp2 = fibRecursivo(n - 2);
+        return (temp1 + temp2);
+    };
+};
+
+function int fibIterativo (int : n) {
+    hivar
+       int : num1, num2, num3, i;
+    byevar
+    num1 = 0;
+    num2 = 1;
+    from i = 0 to n do {
+        num3 = num1 + num2;
+        num1 = num2;
+        num2 = num3;
+    };
+    return (num1);
+};
+
+
+main () {
+
+    result = fibRecursivo(10);
+    write(result);
+    result = fibIterativo(10);
+    write(result);
+
+};

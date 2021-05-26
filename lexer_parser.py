@@ -602,7 +602,7 @@ def p_save_int_var_as_current(p):
     else:
         st.set_curr_id(p[-1])
     st.set_constant_sign('+')
-
+    st.current_scope().add_var(st.current_id(), 'int', True)
     memory = Memory.get()
     memory.add_constant(st.current_id(), 'int')
 

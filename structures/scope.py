@@ -48,8 +48,8 @@ class Scope:
         self.__funcs[new_name] = Function(new_name, func_type, [])
         return self.__funcs[new_name]
 
-    def add_var(self, new_name, var_type=None):
-        if new_name in self.vars():
+    def add_var(self, new_name, var_type=None, is_const=False):
+        if new_name in self.vars() and not is_const:
             raise Exception(
                 f'Variable "{new_name}" is already declared in this scope')
         self.__vars[new_name] = Variable(new_name, var_type)

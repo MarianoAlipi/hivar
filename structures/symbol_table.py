@@ -158,6 +158,12 @@ class SymbolTable:
     def reset_current_params(self):
         self.__current_params = []
 
+    def add_constant(self, constant):
+        self.__constants.append(constant)
+
+    def is_constant(self, constant):
+        return constant in self.__constants
+
     def __init__(self):
         if SymbolTable.__instance:
             raise Exception(
@@ -184,3 +190,4 @@ class SymbolTable:
             self.__var_to_assign = Stack()
             self.__for_ids = Stack()
             self.__current_params = []
+            self.__constants = []
