@@ -1,6 +1,7 @@
 program funcs_pp;
 
 class Persona {
+
     attributes
         int : edad;
         char : nombre[30];
@@ -15,6 +16,15 @@ class Persona {
 hivar
     int : i, j, p;
 byevar
+
+function int mult (int : a, int : b) {
+    hivar
+        int : c;
+    byevar
+
+    c = a * b;
+    return(c);
+};
  
 function int suma (int : a, int : b) {
     hivar
@@ -25,17 +35,9 @@ function int suma (int : a, int : b) {
     if (c == 0) {
         return (a);
     } else {
+        b = mult(a, b);
         return (b);
     };
-};
-
-function int mult (int : a, int : b) {
-    hivar
-        int : c;
-    byevar
-
-    c = a * b;
-    return(c);
 };
 
 function void imprime (int : c) {
@@ -47,5 +49,4 @@ main() {
     j = 5;
     p = suma(i, j);
     imprime(p);
-    p = mult(i, j);
 };

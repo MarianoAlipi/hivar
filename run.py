@@ -4,7 +4,7 @@ from structures.symbol_table import SymbolTable
 from structures.virtual_machine import VirtualMachine
 DEBUG_MODE = 0
 
-lines = get_file_content("tests/while.txt")
+lines = get_file_content("tests/fibonnacci.txt")
 lexer.input(lines)
 
 try:
@@ -21,7 +21,7 @@ st.print_quads()
 try:
     vm = VirtualMachine.get()
     vm.execute_quads()
-    print('succesfull execution')
+    print('Successful execution.')
 except Exception as err:
     raise Exception(
         f'Something went wrong during the execution: {err}'

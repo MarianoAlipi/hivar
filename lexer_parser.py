@@ -16,10 +16,7 @@ from structures.quadruples import Quad
 from structures.stack import Stack, push_operator, pop_operator
 from structures.memory import Memory
 from reserved import reserved, tokens
-from structures.func_directory import (save_func_to_directory, get_func_from_directory,
-                                       set_return_quad, set_return_quad_val,
-                                       set_return_var_id, get_return_var_id, update_func_prefix,
-                                       save_params_to_directory, save_local_vars_to_directory)
+from structures.func_directory import *
 
 # Regular expression rules for simple tokens.
 t_COMMA = r','
@@ -84,9 +81,8 @@ def t_newline(t):
 
 
 def t_error(t):
-    print(f'Unexpected character at line {t.lineno}: {t.value}')
-    t.lexer.skip(1)
-    pass
+    print(f'Unexpected character at line {t.lineno}: {t.value[0]}\n└─ context: {t.value}\n')
+
 
 #############
 ## GRAMMAR ##
@@ -605,7 +601,7 @@ def p_save_int_var_as_current(p):
     else:
         st.set_curr_id(p[-1])
     st.set_constant_sign('+')
-
+    st.current_scope().add_var(st.current_id(), 'int', True)
     memory = Memory.get()
     memory.add_constant(st.current_id(), 'int')
 
@@ -630,11 +626,27 @@ def p_save_float_var_as_current(p):
 
 def p_func_call(p):
     '''
-    func_call : ID PERIOD ID LEFT_PARENTHESIS func_call_1 RIGHT_PARENTHESIS
+    func_call : ID PERIOD ID check_if_obj_func_exists LEFT_PARENTHESIS func_call_1 RIGHT_PARENTHESIS
               | ID set_return_quad_val LEFT_PARENTHESIS func_call_1 RIGHT_PARENTHESIS
     '''
     p[0] = tuple(p[1:])
     # TODO cuando sean objetos algo tendremos que hacer con el func_prefix
+
+
+def create_era_quad(st, func_id):
+    era_quad = Quad('ERA', '', '', func_id)
+    st.quads().append(era_quad)
+
+
+def p_check_if_obj_func_exists(p):
+    '''
+    check_if_obj_func_exists :
+    '''
+    st = SymbolTable.get()
+    #func_id = st.func_prefix() + "." + p[-1]
+    func_id = p[-1]
+    function = validate_existing(func_id, True)
+    create_era_quad(st, func_id)
 
 
 def p_set_return_quad_val(p):
@@ -642,12 +654,17 @@ def p_set_return_quad_val(p):
     set_return_quad_val :
     '''
     st = SymbolTable.get()
-    func_jump = Quad('gosub', None, None, p[-1])
+    func_id = p[-1]
+    if not validate_existing(func_id, True):
+        raise Exception(
+            f"Function {func_id} not found in scope {st.current_scope_name()}")
+    func_jump = Quad('gosub', None, None, func_id)
     st.pending_jumps().push(func_jump)
     # clear params
     st.reset_current_params()
-    st.current_params().append(p[-1])
+    st.current_params().append(func_id)
     st.operators().push('(')
+    create_era_quad(st, func_id)
 
 
 def p_func_call_1(p):
@@ -754,8 +771,8 @@ def p_write(p):
 
 def p_write_1(p):
     '''
-    write_1 : expression write_expression write_2
-            | CONST_STRING write_expression write_2
+    write_1 : expression write_expression
+            | CONST_STRING write_expression
     '''
     p[0] = tuple(p[1:])
 
@@ -764,8 +781,14 @@ def p_write_expression(p):
     '''
     write_expression :
     '''
-    # TODOWRITE maybe no es flatten? guardar un 0 o 1 dependiendo si es banner o variable?
-    to_write = flatten(p[-1])
+    # TODOWRITE
+    to_write = ''
+    print('\n=====')
+    if type(p[-1]) == str:
+        to_write = p[-1]
+    elif type(p[-1] == tuple):
+        # TODOWRITE we should make quads for an 'exp' in a write(), evaluate it and save to a temp variable
+        to_write = flatten(p[-1])
     st = SymbolTable.get()
     quad = Quad('write', '', '', to_write)
     st.quads().append(quad)
@@ -781,14 +804,6 @@ def p_write_expression(p):
     # 17 write   ('matrix', '[', 'B', ',', 'A', ']')
 # lo bueno: si gaurda dos separados
 # lo malo: no separamos entre banners o vars, una ves teniendo esto es de mover el execute a que imprima segun si es banner o var
-
-
-def p_write_2(p):
-    '''
-    write_2 : COMMA write_1
-            | empty
-    '''
-    p[0] = tuple(p[1:])
 
 
 def p_decision(p):

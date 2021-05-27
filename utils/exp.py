@@ -1,6 +1,7 @@
 from utils.semantics import match_operators
 from structures.quadruples import Quad
-from structures.func_directory import get_return_var_id, set_return_var_id, save_temp_var_to_directory
+from structures.func_directory import (get_return_var_id, set_return_var_id,
+                                       save_temp_var_to_directory, get_params_from_func_id)
 # evals
 
 
@@ -34,7 +35,7 @@ def assign_to_var(st):
     res_var_type = st.current_scope().get_var_from_id(res_var).var_type()
     if res_var_type != left_type:
         raise Exception(
-            f'Problem while assigning var {res_var} types do not match.left_op: {left_op}, right_op: {right_op}, operator: {operator}. Error: {err}')
+            f'Problem while assigning var {res_var}: types do not match. left_op: {left_op}, res_var_type: {res_var_type}, operator: {operator}')
     quad = Quad(operator, left_op, right_op, res_var)
     st.quads().append(quad)
 
@@ -42,12 +43,12 @@ def assign_to_var(st):
 def assign_func_to_var(st, p):
     res_var = st.var_to_assign().pop()
     res_var_type = st.current_scope().get_var_from_id(res_var).var_type()
-    func_return_var = get_return_var_id(p[-1][0])
-    func_return_type = st.current_scope().funcs()[p[-1][0]].return_type()
+    func_id = p[-1][0]
+    func_return_type = st.current_scope().get_func_from_id(func_id).return_type()
     if res_var_type != func_return_type:
         raise Exception(
-            f'Problem while assigning var {res_var} types do not match.res_var: {res_var}, func_return_var: {func_return_var}')
-    quad = Quad('=', func_return_var, '', res_var)
+            f'Problem while assigning var {res_var}: types do not match. res_var: {res_var}, func: {func_id}, func_return_type: {func_return_type}')
+    quad = Quad('ASSGN', res_var, '', func_id)
     st.quads().append(quad)
 
 #func_calls and params
@@ -62,6 +63,18 @@ def create_param_assignment_quads(st):
     for full_param in full_params:
         param_keys.append(full_param[1])
     for i in range(len(param_keys)):
+        left_type = st.current_scope().get_var_from_id(
+            param_vals[i]).var_type()
+        right_params = get_params_from_func_id(func_name)
+        right_type = None
+        for param in right_params:
+            if param[1] == param_keys[i]:
+                right_type = param[0]
+        if left_type != right_type:
+            raise Exception(
+                f'Type mismatch. \
+                Expected {right_type} param but got {left_type}.'
+            )
         param_quad = Quad('param', param_vals[i], '', param_keys[i])
         st.quads().append(param_quad)
     func_jump = st.pending_jumps().pop()
@@ -82,6 +95,7 @@ def set_return_val(st):
     return_quad = Quad('return', '', '', st.operands().top())
     st.quads().append(return_quad)
     set_return_var_id(st.current_scope_name(), st.operands().pop())
+
 # utils
 
 

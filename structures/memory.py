@@ -20,6 +20,8 @@ ranges = {
 
 literal_memory = {}
 
+# from structures.memory import print_literal_memory, literal_memory
+
 
 def print_literal_memory():
     print(literal_memory)
@@ -61,13 +63,17 @@ class MemoryChunk:
         if var_id in chars:
             return chars[var_id]
 
+        memory = Memory.get()
+        constants = memory.get_constants()
+        address = constants.find_address(var_id)
+        return address
+
     def init_address(self, var_id, address_type, scope):
         try:
             # consige el arr de ese tipo
             assigned_address = self.get_vars(address_type)
 
             # ponle de valor, la direccion de memoria
-            # TODO: should this be hardcoded to 'global'?
             memory_index = ranges[scope][address_type]
             assigned_address[var_id] = memory_index
 
