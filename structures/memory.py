@@ -1,6 +1,7 @@
 from collections import deque
 from structures.stack import Stack
-
+from utils.runtime import has_dimensions
+from structures.index_handler import matrix_index, array_index
 SIZE = 1000
 
 ranges = {
@@ -47,26 +48,90 @@ class MemoryChunk:
             return self.__char
 
     def find_address(self, var_id):
+        has_dims = has_dimensions(var_id)
+
         ints = self.get_vars('int')
         if var_id in ints:
+            if has_dims:
+                base = ints[var_id]
+                if type(has_dims) == tuple:
+                    mat_index = matrix_index().pop()
+                    row = mat_index[0]
+                    col = mat_index[1]
+                    return base + (has_dims[1] * row) + col
+                else:
+                    offset = array_index().pop()
+                    return base + offset
             return ints[var_id]
 
         floats = self.get_vars('float')
         if var_id in floats:
+            if has_dims:
+                base = floats[var_id]
+                if type(has_dims) == tuple:
+                    mat_index = matrix_index().pop()
+                    row = mat_index[0]
+                    col = mat_index[1]
+                    return base + (has_dims[1] * row) + col
+                else:
+                    offset = array_index().pop()
+                    return base + offset
             return floats[var_id]
 
         bools = self.get_vars('bool')
         if var_id in bools:
+            if has_dims:
+                base = bools[var_id]
+                if type(has_dims) == tuple:
+                    mat_index = matrix_index().pop()
+                    row = mat_index[0]
+                    col = mat_index[1]
+                    return base + (has_dims[1] * row) + col
+                else:
+                    offset = array_index().pop()
+                    return base + offset
             return bools[var_id]
 
         chars = self.get_vars('char')
         if var_id in chars:
+            if has_dims:
+                base = chars[var_id]
+                if type(has_dims) == tuple:
+                    mat_index = matrix_index().pop()
+                    row = mat_index[0]
+                    col = mat_index[1]
+                    return base + (has_dims[1] * row) + col
+                else:
+                    offset = array_index().pop()
+                    return base + offset
             return chars[var_id]
 
         memory = Memory.get()
         constants = memory.get_constants()
         address = constants.find_address(var_id)
         return address
+
+    def init_array(self, var_id, address_type, scope, var_size):
+        try:
+            # consige el arr de ese tipo
+            assigned_address = self.get_vars(address_type)
+
+            # ponle de valor, la direccion de memoria base (la primera que sigue, con el tamaño le puedes sumar las n al indexar)
+            memory_index = ranges[scope][address_type]
+            assigned_address[var_id] = memory_index
+
+            # por cada variable quita un memory_index y asigna none a la literal:memory
+            for _ in range(var_size):
+                memory_index = memory_index+1
+                ranges[scope][address_type] = memory_index
+                literal_memory[memory_index] = None
+
+        except Exception as err:
+            print(err)
+            breakpoint()
+        self.__memory_left[address_type] -= 1
+        if self.__memory_left[address_type] <= 0:
+            raise Exception(f'OUT OF MEMORY. type = {address_type}')
 
     def init_address(self, var_id, address_type, scope):
         try:
@@ -155,7 +220,7 @@ class Memory:
     # used for singleton implementation
     __instance = None
 
-    @classmethod
+    @ classmethod
     def get(arg):
         if Memory.__instance is None:
             Memory()

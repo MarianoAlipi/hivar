@@ -95,6 +95,7 @@ def restart_loop(st):
 
 def save_cond_for_quad(st):
     temp = get_temp_var_name(st, BOOL)
+    st.current_scope().add_var(temp, BOOL)
     quad = Quad('<', st.for_ids().top(), st.operands().pop(), temp)
     st.quads().append(quad)
     st.pending_jumps().push(len(st.quads()))

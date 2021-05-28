@@ -81,7 +81,8 @@ def t_newline(t):
 
 
 def t_error(t):
-    print(f'Unexpected character at line {t.lineno}: {t.value[0]}\n└─ context: {t.value}\n')
+    print(
+        f'Unexpected character at line {t.lineno}: {t.value[0]}\n└─ context: {t.value}\n')
 
 
 #############
@@ -423,7 +424,8 @@ def p_verify_arr_rows(p):
     st = SymbolTable.get()
     curr_id = st.var_to_assign().pop()
     curr_var = st.current_scope().get_var_from_id(curr_id)
-    verify_quad = Quad('verify', st.operands().pop(), '', curr_var.i())
+    verify_quad = Quad('verifya', curr_id, st.operands().pop(), curr_var.i())
+    st.set_curr_id(curr_id)
     st.quads().append(verify_quad)
 
 
@@ -434,7 +436,7 @@ def p_verify_rows(p):
     st = SymbolTable.get()
     curr_id = st.var_to_assign().top()
     curr_var = st.current_scope().get_var_from_id(curr_id)
-    verify_quad = Quad('verify', st.operands().pop(), '', curr_var.i())
+    verify_quad = Quad('verifyr', curr_id, st.operands().pop(), curr_var.i())
     st.quads().append(verify_quad)
 
 
@@ -445,7 +447,8 @@ def p_verify_cols(p):
     st = SymbolTable.get()
     curr_id = st.var_to_assign().pop()
     curr_var = st.current_scope().get_var_from_id(curr_id)
-    verify_quad = Quad('verify', st.operands().pop(), '', curr_var.j())
+    verify_quad = Quad('verifyc', curr_id, st.operands().pop(), curr_var.j())
+    st.set_curr_id(curr_id)
     st.quads().append(verify_quad)
 
 
