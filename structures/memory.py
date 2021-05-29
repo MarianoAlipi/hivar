@@ -48,7 +48,10 @@ class MemoryChunk:
             return self.__char
 
     def find_address(self, var_id):
-        has_dims = has_dimensions(var_id)
+        try:
+            has_dims = has_dimensions(var_id)
+        except Exception:
+            has_dims = False
 
         ints = self.get_vars('int')
         if var_id in ints:

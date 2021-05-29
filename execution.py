@@ -18,7 +18,11 @@ def init_memory(memory, func_id):
     if func_id == 'global':
         global_mem = memory.get_global_memory()
         for var in new_vars:
-            if has_dimensions(var[0]):
+            try:
+                has_dims = has_dimensions(var[0])
+            except Exception:
+                has_dims = False
+            if has_dims:
                 var_size = get_size(var[0])
                 global_mem.init_array(var[0], var[1], 'global', var_size)
             else:
@@ -27,7 +31,11 @@ def init_memory(memory, func_id):
     else:
         local_mem = MemoryChunk()
         for var in new_vars:
-            if has_dimensions(var[0]):
+            try:
+                has_dims = has_dimensions(var[0])
+            except Exception:
+                has_dims = False
+            if has_dims:
                 var_size = get_size(var[0])
                 local_mem.init_array(var[0], var[1], 'local', var_size)
             else:
@@ -37,7 +45,6 @@ def init_memory(memory, func_id):
 
 def process_quad(vm, quad):
     op, left, right, res = quad.unpack()
-
     memory = Memory.get()
     if op == '=':
         if is_cte(left):
