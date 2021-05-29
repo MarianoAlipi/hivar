@@ -263,7 +263,7 @@ def p_vars_2(p):
 
 def p_funcs(p):
     '''
-    funcs : FUNCTION func_type ID save_id save_func push_scope LEFT_PARENTHESIS parameters save_params_to_fd RIGHT_PARENTHESIS LEFT_CURLY vars save_vars_to_fd block_1 set_returning_quad RIGHT_CURLY pop_scope SEMICOLON funcs_1
+    funcs : FUNCTION func_type ID save_id save_func push_scope LEFT_PARENTHESIS parameters save_params_to_fd RIGHT_PARENTHESIS LEFT_CURLY vars save_vars_to_fd block_1 set_returning_quad RIGHT_CURLY pop_scope SEMICOLON funcs
           | empty
     '''
     p[0] = tuple(p[1:])
@@ -281,14 +281,6 @@ def p_save_params_to_fd(p):
     save_params_to_fd :
     '''
     save_params_to_directory(SymbolTable.get())
-
-
-def p_funcs_1(p):
-    '''
-    funcs_1 : funcs
-            | empty
-    '''
-    p[0] = tuple(p[1:])
 
 
 def p_func_type(p):
@@ -786,11 +778,9 @@ def p_write_expression(p):
     '''
     # TODOWRITE
     to_write = ''
-    print('\n=====')
     if type(p[-1]) == str:
         to_write = p[-1]
     elif type(p[-1] == tuple):
-        # TODOWRITE we should make quads for an 'exp' in a write(), evaluate it and save to a temp variable
         to_write = flatten(p[-1])
     st = SymbolTable.get()
     quad = Quad('write', '', '', to_write)
