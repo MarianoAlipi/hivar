@@ -393,8 +393,8 @@ def p_set_var_to_assign(p):
 
 def p_variable(p):
     '''
-    variable : ID save_var_id_for_dims LEFT_BRACKET exp verify_rows COMMA exp verify_cols RIGHT_BRACKET
-             | ID save_var_id_for_dims LEFT_BRACKET exp verify_arr_rows RIGHT_BRACKET
+    variable : ID save_var_id_for_dims LEFT_BRACKET push_operator exp verify_rows pop_operator COMMA push_operator exp verify_cols pop_operator RIGHT_BRACKET
+             | ID save_var_id_for_dims LEFT_BRACKET push_operator exp verify_arr_rows pop_operator RIGHT_BRACKET
              | ID PERIOD ID
              | ID set_var_as_curr
     '''
