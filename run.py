@@ -4,7 +4,7 @@ from structures.symbol_table import SymbolTable
 from structures.virtual_machine import VirtualMachine
 DEBUG_MODE = 0
 
-lines = get_file_content("tests/fibonnacci.txt")
+lines = get_file_content("tests/matrixes.txt")
 lexer.input(lines)
 
 try:

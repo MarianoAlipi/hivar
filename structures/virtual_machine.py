@@ -2,9 +2,6 @@ from structures.symbol_table import SymbolTable
 from structures.stack import Stack
 from execution import process_quad
 
-# leave as global for easy access
-st = SymbolTable.get()
-
 
 class VirtualMachine:
 
@@ -29,11 +26,7 @@ class VirtualMachine:
     def execute_quads(self):
         quads = self.__quads
         while self.instruction_pointer() < len(quads):
-            try:
-                process_quad(self, quads[self.instruction_pointer()])
-            except Exception as err:
-                print('AAAAA', quads[self.instruction_pointer()].print(), err)
-                breakpoint()
+            process_quad(self, quads[self.instruction_pointer()])
 
     def add_func_param(self, param):
         self.__func_params.append(param)
@@ -58,6 +51,6 @@ class VirtualMachine:
             VirtualMachine.__instance = self
             self.__ip = 0
             self.__execution_stack = Stack()
-            self.__quads = st.quads()
+            self.__quads = SymbolTable.get().quads()
             self.__func_params = []
             self.__jump_stack = Stack()

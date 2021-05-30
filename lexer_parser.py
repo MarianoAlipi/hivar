@@ -81,7 +81,8 @@ def t_newline(t):
 
 
 def t_error(t):
-    print(f'Unexpected character at line {t.lineno}: {t.value[0]}\n└─ context: {t.value}\n')
+    print(
+        f'Unexpected character at line {t.lineno}: {t.value[0]}\n└─ context: {t.value}\n')
 
 
 #############
@@ -262,7 +263,7 @@ def p_vars_2(p):
 
 def p_funcs(p):
     '''
-    funcs : FUNCTION func_type ID save_id save_func push_scope LEFT_PARENTHESIS parameters save_params_to_fd RIGHT_PARENTHESIS LEFT_CURLY vars save_vars_to_fd block_1 set_returning_quad RIGHT_CURLY pop_scope SEMICOLON funcs_1
+    funcs : FUNCTION func_type ID save_id save_func push_scope LEFT_PARENTHESIS parameters save_params_to_fd RIGHT_PARENTHESIS LEFT_CURLY vars save_vars_to_fd block_1 set_returning_quad RIGHT_CURLY pop_scope SEMICOLON funcs
           | empty
     '''
     p[0] = tuple(p[1:])
@@ -280,14 +281,6 @@ def p_save_params_to_fd(p):
     save_params_to_fd :
     '''
     save_params_to_directory(SymbolTable.get())
-
-
-def p_funcs_1(p):
-    '''
-    funcs_1 : funcs
-            | empty
-    '''
-    p[0] = tuple(p[1:])
 
 
 def p_func_type(p):
@@ -400,8 +393,8 @@ def p_set_var_to_assign(p):
 
 def p_variable(p):
     '''
-    variable : ID save_var_id_for_dims LEFT_BRACKET exp verify_rows COMMA exp verify_cols RIGHT_BRACKET
-             | ID save_var_id_for_dims LEFT_BRACKET exp verify_arr_rows RIGHT_BRACKET
+    variable : ID save_var_id_for_dims LEFT_BRACKET push_operator exp verify_rows pop_operator COMMA push_operator exp verify_cols pop_operator RIGHT_BRACKET
+             | ID save_var_id_for_dims LEFT_BRACKET push_operator exp verify_arr_rows pop_operator RIGHT_BRACKET
              | ID PERIOD ID
              | ID set_var_as_curr
     '''
@@ -423,7 +416,8 @@ def p_verify_arr_rows(p):
     st = SymbolTable.get()
     curr_id = st.var_to_assign().pop()
     curr_var = st.current_scope().get_var_from_id(curr_id)
-    verify_quad = Quad('verify', st.operands().pop(), '', curr_var.i())
+    verify_quad = Quad('verifya', curr_id, st.operands().pop(), curr_var.i())
+    st.set_curr_id(curr_id)
     st.quads().append(verify_quad)
 
 
@@ -434,7 +428,7 @@ def p_verify_rows(p):
     st = SymbolTable.get()
     curr_id = st.var_to_assign().top()
     curr_var = st.current_scope().get_var_from_id(curr_id)
-    verify_quad = Quad('verify', st.operands().pop(), '', curr_var.i())
+    verify_quad = Quad('verifyr', curr_id, st.operands().pop(), curr_var.i())
     st.quads().append(verify_quad)
 
 
@@ -445,7 +439,8 @@ def p_verify_cols(p):
     st = SymbolTable.get()
     curr_id = st.var_to_assign().pop()
     curr_var = st.current_scope().get_var_from_id(curr_id)
-    verify_quad = Quad('verify', st.operands().pop(), '', curr_var.j())
+    verify_quad = Quad('verifyc', curr_id, st.operands().pop(), curr_var.j())
+    st.set_curr_id(curr_id)
     st.quads().append(verify_quad)
 
 
@@ -783,11 +778,9 @@ def p_write_expression(p):
     '''
     # TODOWRITE
     to_write = ''
-    print('\n=====')
     if type(p[-1]) == str:
         to_write = p[-1]
     elif type(p[-1] == tuple):
-        # TODOWRITE we should make quads for an 'exp' in a write(), evaluate it and save to a temp variable
         to_write = flatten(p[-1])
     st = SymbolTable.get()
     quad = Quad('write', '', '', to_write)

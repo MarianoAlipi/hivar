@@ -4,7 +4,6 @@ reserved = {
     'program':      'PROGRAM_KEYWORD',
     'main':         'MAIN_KEYWORD',
     'class':        'CLASS_KEYWORD',
-    'inherits':     'INHERITS',
     'attributes':   'ATTRIBUTES_KEYWORD',
     'hivar':        'VARS_KEYWORD',
     'byevar':       'END_VARS',
