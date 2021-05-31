@@ -37,9 +37,11 @@ function int fibIterativo (int : n) {
 main () {
 
     result = fibRecursivo(10);
+    write("fibonacciRecursivo(10) = ");
     write(result);
     write("\n");
     result = fibIterativo(10);
+    write("fibonacciIterativo(10) = ");
     write(result);
     write("\n");
 
