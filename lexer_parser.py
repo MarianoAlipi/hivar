@@ -70,7 +70,7 @@ def t_CONST_STRING(t):
     # String delimiters are "".
     # Allow everything but new line characters.
     # Allow " by escaping it with \.
-    r'\"([^\\\n]|(\\.))+\"'
+    r'"(\\"|[^\n"])+"'
     return t
 
 
@@ -798,27 +798,16 @@ def p_write_expression(p):
     '''
     write_expression :
     '''
-    # TODOWRITE
     to_write = ''
     if type(p[-1]) == str:
+        # If it's a banner, save it as is
         to_write = p[-1]
     elif type(p[-1] == tuple):
+        # If it's an ID, save it as a tuple
         to_write = flatten(p[-1])
     st = SymbolTable.get()
     quad = Quad('write', '', '', to_write)
     st.quads().append(quad)
-
-# el codigo
-    #write('matrix[B,A]', matrix[B,A]);
-# saca estos quads
-    # 12 verify B  10
-    # 13 verify A  5
-    # 14 write   ('matrix', '[', 'B', ',', 'A', ']')
-    # 15 verify B  10
-    # 16 verify A  5
-    # 17 write   ('matrix', '[', 'B', ',', 'A', ']')
-# lo bueno: si gaurda dos separados
-# lo malo: no separamos entre banners o vars, una ves teniendo esto es de mover el execute a que imprima segun si es banner o var
 
 
 def p_decision(p):

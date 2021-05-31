@@ -68,11 +68,27 @@ def process_quad(vm, quad):
         else:
             vm.point_to_next_quad()
     elif op == 'write':
-        # breakpoint()
-
-        # TODOWRITE checar si es un banner (solo print) o si es un val (consulta)
-        print(memory.active_memory().get_value(res[0]))
-        breakpoint()
+        if type(res) == str:
+            # Print the string removing " and escaping \" and \n
+            to_write = res[1:-1]
+            i = 0
+            while i < len(to_write):
+                # If a backslash is found:
+                if to_write[i] == '\\':
+                    # Escape \"
+                    if to_write[i + 1] == '"':
+                        to_write = to_write[0:i] + to_write[i + 1:]
+                    # Escape \n
+                    elif to_write[i + 1] == 'n':
+                        to_write = to_write[0:i] + '\n' + to_write[i + 2:]
+                    # Escape \\
+                    elif to_write[i + 1] == '\\':
+                        to_write = to_write[0:i] + '\\' + to_write[i + 2:]
+                i += 1
+            print(to_write, end='')
+        else:
+            # Search for the ID's value
+            print(memory.active_memory().get_value(res[0]), end='')
         vm.point_to_next_quad()
     elif op == 'read':
         user_input = input('>>> ')
