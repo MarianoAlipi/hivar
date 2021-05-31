@@ -22,6 +22,9 @@ function int fact (int : j) {
 main() {
     j = 10;
     i = fact(j);
+    write("factorial(");
+    write(j);
+    write(") = ");
     write(i);
     write("\n");
 };
