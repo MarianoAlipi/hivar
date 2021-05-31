@@ -55,15 +55,33 @@ def t_ID(t):
     return t
 
 
+def t_CONST_INT(t):
+    r'\d+'
+    t.value = int(t.value)
+    return t
+
+
 def t_CONST_FLOAT(t):
     r'\d+\.\d+'
     t.value = float(t.value)
     return t
 
 
-def t_CONST_INT(t):
-    r'\d+'
-    t.value = int(t.value)
+def t_CONST_CHAR(t):
+    # Character delimiters are ''.
+    # Allow everything but new line characters.
+    # Allow ' by escaping it with \.
+    r"'(\\'|\\n|\\\\|[^\n']|)'"
+    if t.value == r"'\'":
+        t.value = r'\\'
+    elif t.value == r"'\n'":
+        t.value = '\n'
+    elif t.value == r"'\''":
+        t.value = "'"
+    elif t.value == r"''":
+        t.value = ''
+    else:
+        t.value = t.value[1]
     return t
 
 
@@ -608,8 +626,8 @@ def p_constant(p):
     '''
     constant : CONST_INT save_int_var_as_current
              | CONST_FLOAT save_float_var_as_current
+             | CONST_CHAR save_char_var_as_current
     '''
-    # CONST_CHAR save_char_as_current
     p[0] = p[1]
 
 
@@ -649,6 +667,18 @@ def p_save_float_var_as_current(p):
 
     memory = Memory.get()
     memory.add_constant(st.current_id(), 'float')
+
+
+def p_save_char_var_as_current(p):
+    '''
+    save_char_var_as_current :
+    '''
+    st = SymbolTable.get()
+    st.set_curr_type('char')
+    st.set_curr_id(p[-1])
+
+    memory = Memory.get()
+    memory.add_constant(st.current_id(), 'char')
 
 
 def p_func_call(p):

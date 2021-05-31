@@ -1,0 +1,35 @@
+program char_test;
+
+hivar
+    char : ch, newline, singlequote, doublequote, backslash, space, empty;
+byevar
+
+main() {
+
+    ch = 'a';
+    singlequote = '\'';
+    doublequote = '"';
+    newline = '\n';
+    backslash = '\\';
+    space = ' ';
+    empty = '';
+
+    write("\nletter: ");
+    write(ch);
+    write("\nanother letter: ");
+    write('A');
+    write("\nsinglequote: ");
+    write(singlequote);
+    write("\ndoublequote: ");
+    write(doublequote);
+    write("\nnewline: ");
+    write(newline);
+    write("\nbackslash: ");
+    write(backslash);
+    write("\nspace: ");
+    write(space);
+    write("\nempty: ");
+    write(empty);
+    write("\n");
+
+};

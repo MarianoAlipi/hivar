@@ -1,0 +1,63 @@
+program matrix_mult;
+
+hivar
+    int : matA[3,3];
+    int : matB[3,3];
+    int : matC[3,3];
+    int : i, j;
+byevar
+
+function void mult () {
+    hivar
+        int : x, y, z;
+    byevar
+
+    from y = 0 to 3 do {
+        from x = 0 to 3 do {
+            from z = 0 to 3 do {
+                matC[y,x] = matC[y,x] + matA[y,z] * matB[z,x];
+            };
+        };
+    };
+};
+
+main() {
+    
+    from i = 0 to 3 do {
+        from j = 0 to 3 do {
+            matA[i,j] = 9 - i - j + 1;
+            matB[i,j] = i + j;
+            matC[i,j] = 0;
+        };
+    };
+
+    from i = 0 to 3 do {
+        from j = 0 to 3 do {
+            write(matA[i,j]);
+            write(", ");
+        };
+        write("\n");
+    };
+
+    write("\n");
+
+    from i = 0 to 3 do {
+        from j = 0 to 3 do {
+            write(matB[i,j]);
+            write(", ");
+        };
+        write("\n");
+    };
+
+    write("\n");
+
+    mult();
+
+    from i = 0 to 3 do {
+        from j = 0 to 3 do {
+            write(matC[i,j]);
+            write(", ");
+        };
+        write("\n");
+    };
+};

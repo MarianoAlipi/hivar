@@ -1,0 +1,80 @@
+program array;
+
+hivar
+    int : arr[6];
+    int : i, num;
+byevar
+
+function int find (int : val) {
+    hivar
+        int : i;
+    byevar
+
+    from i = 0 to 6 do {
+        if (arr[i] == val) {
+            return (i);
+        };
+    };
+
+    return (-1);
+};
+
+function void sort () {
+    hivar
+        int : i, temp, swaps;
+    byevar
+
+    swaps = 1;
+
+    while (swaps > 0) do {
+        swaps = 0;
+
+        from i = 0 to 5 do {
+            if (arr[i] > arr[i + 1]) {
+                temp = arr[i];
+                arr[i] = arr[i + 1];
+                arr[i + 1] = temp;
+                swaps = swaps + 1;
+            };
+        };
+    };
+
+};
+
+function void printArray () {
+    hivar
+        int : i;
+    byevar
+
+    from i = 0 to 6 do {
+        write(arr[i]);
+        write(", ");
+    };
+    write("\n");
+};
+
+main() {
+
+    arr[0] = 6;
+    arr[1] = 5;
+    arr[2] = 4;
+    arr[3] = 3;
+    arr[4] = 2;
+    arr[5] = 1;
+
+    write("Initial array:\n");
+    printArray();
+
+    i = find(5);
+    write("\nindex of 5: ");
+    write(i);
+
+    i = find(10);
+    write("\nindex of 10: ");
+    write(i);
+
+    write("Sorted array:\n");
+    sort();
+    printArray();
+
+};
