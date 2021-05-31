@@ -2,9 +2,9 @@ from lexer_parser import lexer, parser
 from file_manager import get_file_content
 from structures.symbol_table import SymbolTable
 from structures.virtual_machine import VirtualMachine
-DEBUG_MODE = 0
+DEBUG_MODE = 1
 
-lines = get_file_content("tests/matrixes.txt")
+lines = get_file_content("tests/objetos.txt")
 lexer.input(lines)
 
 try:

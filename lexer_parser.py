@@ -380,25 +380,38 @@ def p_assign_to_var(p):
     assign_to_var(SymbolTable.get())
 
 
-def p_set_var_to_assign(p):
+def p_set_var_to_assign(param):
     '''
     set_var_to_assign :
     '''
     st = SymbolTable.get()
-    if type(p[-1]) == tuple:
-        st.var_to_assign().push(p[-1][0])
-    else:
-        st.var_to_assign().push(p[-1])
+    st.var_to_assign().push(st.current_id())
 
 
 def p_variable(p):
     '''
     variable : ID save_var_id_for_dims LEFT_BRACKET push_operator exp verify_rows pop_operator COMMA push_operator exp verify_cols pop_operator RIGHT_BRACKET
              | ID save_var_id_for_dims LEFT_BRACKET push_operator exp verify_arr_rows pop_operator RIGHT_BRACKET
-             | ID PERIOD ID
+             | ID set_var_as_curr PERIOD ID set_attr_as_curr
              | ID set_var_as_curr
     '''
     p[0] = tuple(p[1:])
+
+
+def p_set_attr_as_curr(p):
+    '''
+    set_attr_as_curr :
+    '''
+    st = SymbolTable.get()
+    attr = p[-1]
+    obj_id = st.current_id()
+    obj_type = st.current_type()
+    class_scope = st.scope_stack()[0][1].scopes()[obj_type]
+
+    attr_var = class_scope.get_var_from_id(attr)
+
+    st.set_curr_id((obj_id, attr))
+    st.set_curr_type(attr_var.var_type())
 
 
 def p_save_var_id_for_dims(p):
@@ -452,7 +465,8 @@ def p_set_var_as_curr(p):
     # start always by setting to none, the logic will check if these exists and act accordingly
     curr_var = st.current_scope().get_var_from_id(p[-1])
     st.set_curr_id(p[-1])
-    st.set_curr_type(curr_var.var_type())
+    if type(curr_var) != dict:
+        st.set_curr_type(curr_var.var_type())
 
 
 def p_expression(p):
@@ -621,11 +635,20 @@ def p_save_float_var_as_current(p):
 
 def p_func_call(p):
     '''
-    func_call : ID PERIOD ID check_if_obj_func_exists LEFT_PARENTHESIS func_call_1 RIGHT_PARENTHESIS
+    func_call : ID save_obj_id PERIOD ID check_if_obj_func_exists LEFT_PARENTHESIS func_call_1 RIGHT_PARENTHESIS
               | ID set_return_quad_val LEFT_PARENTHESIS func_call_1 RIGHT_PARENTHESIS
     '''
     p[0] = tuple(p[1:])
     # TODO cuando sean objetos algo tendremos que hacer con el func_prefix
+
+
+def p_save_obj_id(p):
+    '''
+    save_obj_id :
+    '''
+    st = SymbolTable.get()
+    era_quad = Quad('ERAF', '', p[-1], '')
+    st.quads().append(era_quad)
 
 
 def create_era_quad(st, func_id):
@@ -639,9 +662,8 @@ def p_check_if_obj_func_exists(p):
     '''
     st = SymbolTable.get()
     #func_id = st.func_prefix() + "." + p[-1]
-    func_id = p[-1]
-    function = validate_existing(func_id, True)
-    create_era_quad(st, func_id)
+    func_id = validate_existing(p[-1])
+    st.quads()[-1].set_res(func_id)
 
 
 def p_set_return_quad_val(p):

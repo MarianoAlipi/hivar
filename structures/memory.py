@@ -53,6 +53,8 @@ class MemoryChunk:
         except Exception:
             has_dims = False
 
+        # TODOBJ checar si es un objeto, si si la dimension es base + N de params
+
         ints = self.get_vars('int')
         if var_id in ints:
             if has_dims:
@@ -113,6 +115,31 @@ class MemoryChunk:
         constants = memory.get_constants()
         address = constants.find_address(var_id)
         return address
+
+    def init_object(self, var_id, address_type, scope):
+        # WIP
+        try:
+            # consige el arr de ese tipo
+            assigned_address = self.get_vars(address_type)
+
+            # ponle de valor, la direccion de memoria base (la primera que sigue, con el tamaño le puedes sumar las n al indexar)
+            memory_index = ranges[scope][address_type]
+            assigned_address[var_id] = memory_index
+
+            attrs = get_attributes()
+
+            # por cada attr quita un memory_index y asigna none a la literal:memory
+            for _ in range(attrs):
+                memory_index = memory_index+1
+                ranges[scope][address_type] = memory_index
+                literal_memory[memory_index] = None
+
+        except Exception as err:
+            print(err)
+            breakpoint()
+        self.__memory_left[address_type] -= 1
+        if self.__memory_left[address_type] <= 0:
+            raise Exception(f'OUT OF MEMORY. type = {address_type}')
 
     def init_array(self, var_id, address_type, scope, var_size):
         try:
@@ -186,8 +213,8 @@ class MemoryChunk:
         return literal_memory[address]
 
     def solve_quad(self, operator, result_var, left_var, right_var):
-        left_value = self.get_value(left_var)
         right_value = self.get_value(right_var)
+        left_value = self.get_value(left_var)
 
         if operator == '+':
             result_value = left_value + right_value

@@ -1,0 +1,27 @@
+program objetos_pp;
+
+class Fecha {
+    attributes
+        int : anio, dia, mes;
+
+    methods
+        function int multiplica (int : x) {
+            return (dia * x);
+        };
+
+        function void print_fecha() {
+            write(30);
+            write(5);
+            write(2021);
+        };
+};
+
+hivar
+    int : d, m, a;
+    Fecha : hoy;
+byevar
+
+main() {
+    hoy.dia = 1;
+    hoy.print_fecha();
+};

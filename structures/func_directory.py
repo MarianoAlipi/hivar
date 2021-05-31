@@ -108,22 +108,23 @@ def save_params_to_directory(st):
 
 
 def save_local_vars_to_directory(st):
-    # rn im saving just the local_vars, in the future we can use these to calculate how much space will be needed
     local_vars = st.current_scope().vars()
     func_id = st.current_scope_name()
     func_id = validate_existing(func_id)
     formatted_vars = []
     for key in local_vars:
-        formatted_vars.append(
-            (local_vars[key].name(), local_vars[key].var_type()))
-
-    # will be useful if we save size
-    #total_size = 0
-    #var_objects = st.current_scope().vars()
-    # for formatted_var in formatted_vars:
-    #    if formatted_var[0] in var_objects:
-    #        total_size += var_objects[formatted_var[0]].get_size()
-
+        try:
+            if type(local_vars[key]) == dict:  # si son objetos
+                attributes = local_vars[key]
+                for attr in attributes:
+                    formatted_vars.append(
+                        (attributes[attr].name(), attributes[attr].var_type()))
+            else:
+                formatted_vars.append(
+                    (local_vars[key].name(), local_vars[key].var_type()))
+        except Exception as err:
+            breakpoint()
+            print(err)
     FuncDirectory[func_id]['local_vars'] = formatted_vars
 
 
