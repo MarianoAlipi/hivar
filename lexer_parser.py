@@ -42,6 +42,7 @@ t_MULTIPLY = r'\*'
 t_DIVIDE = r'\/'
 t_AND = r'&&'
 t_OR = r'\|\|'
+t_EXCLAMATION = r'!'
 t_ignore = r' '
 
 
@@ -594,6 +595,7 @@ def p_constant(p):
     constant : CONST_INT save_int_var_as_current
              | CONST_FLOAT save_float_var_as_current
     '''
+    #CONST_CHAR save_char_as_current
     p[0] = p[1]
 
 
@@ -635,7 +637,7 @@ def p_save_float_var_as_current(p):
 
 def p_func_call(p):
     '''
-    func_call : ID save_obj_id PERIOD ID check_if_obj_func_exists LEFT_PARENTHESIS func_call_1 RIGHT_PARENTHESIS
+    func_call : EXCLAMATION ID save_obj_id PERIOD ID check_if_obj_func_exists LEFT_PARENTHESIS func_call_1 RIGHT_PARENTHESIS
               | ID set_return_quad_val LEFT_PARENTHESIS func_call_1 RIGHT_PARENTHESIS
     '''
     p[0] = tuple(p[1:])

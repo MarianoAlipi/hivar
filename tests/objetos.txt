@@ -22,6 +22,6 @@ hivar
 byevar
 
 main() {
+    !hoy.print_fecha();
     hoy.dia = 1;
-    hoy.print_fecha();
 };

@@ -27,6 +27,9 @@ def init_memory(memory, func_id):
                 global_mem.init_array(var[0], var[1], 'global', var_size)
             else:
                 global_mem.init_address(var[0], var[1], 'global')
+
+            # TODOBJ checar si es un objeto, si si la globalmem.init_object
+
         return global_mem
     else:
         local_mem = MemoryChunk()

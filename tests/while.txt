@@ -2,12 +2,12 @@ program nolineales;
 
 hivar
     int : A, B, C, D;
-    int : matrix[10, 5];
+    int : matrix[5, 2];
 byevar
 
 
 main() {
-    A = 1;
+    i = 1;
     B = 9;
     matrix[B,A] = 15;
     while(A>B) do {
@@ -15,8 +15,11 @@ main() {
     };
     write("A");
     write(A);
+    write("\n");
     write("B");
     write(B);
+    write("\n");
     write("matrix[B,A]");
     write(matrix[B,A]);
+    write("\n");
 };

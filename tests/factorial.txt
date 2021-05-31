@@ -23,4 +23,5 @@ main() {
     j = 10;
     i = fact(j);
     write(i);
+    write("\n");
 };

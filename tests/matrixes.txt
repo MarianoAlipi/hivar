@@ -23,10 +23,12 @@ main() {
 
     k = matrix[4,0] - matrix[1,1];
     write(k);
+    write("\n");
 
     from i = 0 to 5 do {
         from j = 0 to 2 do {
             write(matrix[i,j]);
+            write("\n");
         };
     };
 };

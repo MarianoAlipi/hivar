@@ -4,7 +4,7 @@ from structures.symbol_table import SymbolTable
 from structures.virtual_machine import VirtualMachine
 DEBUG_MODE = 0
 
-lines = get_file_content("tests/objetos.txt")
+lines = get_file_content("tests/bools.txt")
 lexer.input(lines)
 
 try:

@@ -1,0 +1,22 @@
+program bools;
+
+hivar
+    int : A, B;
+    char : C;
+byevar
+
+
+main() {
+    A = 1;
+    C = "c";
+    
+    write("A ");
+    write(A);
+    write("\n");
+    write("C ");
+    write(C);
+    write("\n");
+    write("matrix[B,A]");
+    write(matrix[B,A]);
+    write("\n");
+};
