@@ -1,0 +1,26 @@
+program factorial;
+
+hivar
+    int : i, j, p;
+byevar
+
+function int fact (int : j) {
+    hivar
+        int : i;
+    byevar
+    
+    if (j == 0) {
+        return (1);
+    } else {
+        i = fact(j - 1);
+        return (j * i);
+    };
+    
+};
+
+
+main() {
+    j = 10;
+    i = fact(j);
+    write(i);
+};
