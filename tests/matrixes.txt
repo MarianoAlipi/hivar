@@ -26,8 +26,7 @@ main() {
 
     from i = 0 to 5 do {
         from j = 0 to 2 do {
-            k = matrix[i,j];
-            write(k);
+            write(matrix[i,j]);
         };
     };
 };
