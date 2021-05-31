@@ -53,5 +53,6 @@ tokens = [
     'ID',
     'CONST_INT',
     'CONST_FLOAT',
-    'CONST_STRING'
+    'CONST_STRING',
+    'EXCLAMATION'
 ] + list(reserved.values())

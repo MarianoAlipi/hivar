@@ -54,9 +54,27 @@ class Scope:
                 f'Variable "{new_name}" is already declared in this scope')
         self.__vars[new_name] = Variable(new_name, var_type)
 
+    def add_obj_var(self, global_scope, new_name, var_type):
+        if new_name in self.vars():
+            raise Exception(
+                f'Variable "{new_name}" is already declared in this scope')
+        if var_type not in global_scope.scopes():
+            raise Exception(
+                f'class "{var_type}" not found in global scope')
+        class_scope = global_scope.scopes()[var_type]
+        attributes = class_scope.attributes()
+        var_attrs = {}
+        for attr in attributes:
+            var_attrs[attr] = Variable(
+                attr, class_scope.vars()[attr].var_type())
+        self.__vars[new_name] = var_attrs
+
     def get_var_from_id(self, var_id):
         if var_id in self.vars():
             return self.vars()[var_id]
+        elif type(var_id) == tuple:
+            object_var = self.get_var_from_id(var_id[0])
+            return object_var[var_id[1]]
         else:
             parent_scope = self.parent()
             if parent_scope:

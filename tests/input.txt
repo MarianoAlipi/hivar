@@ -47,7 +47,8 @@ main() {
     read(p);
     j = p * 2;
     i = fact(p);
-    read(estudiante.nombre);
+    read(i);
+    estudiante.nombre = i;
     pelos(p);
     from i = 1 to 10 do {
         write("HelloWorld", alumno.nombre, fact(alumno.edad));

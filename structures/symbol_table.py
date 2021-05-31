@@ -55,7 +55,12 @@ class SymbolTable:
         self.__last_saved_func = saved_func
 
     def save_var(self):
-        self.current_scope().add_var(self.current_id(), self.current_type())
+        if self.current_type() in self.classes():
+            global_scope = self.scope_stack()[0][1]
+            self.current_scope().add_obj_var(
+                global_scope, self.current_id(), self.current_type())
+        else:
+            self.current_scope().add_var(self.current_id(), self.current_type())
 
     def save_temp_var(self, name, var_type):
         self.current_scope().add_var(name, var_type)
@@ -158,12 +163,6 @@ class SymbolTable:
     def reset_current_params(self):
         self.__current_params = []
 
-    def add_constant(self, constant):
-        self.__constants.append(constant)
-
-    def is_constant(self, constant):
-        return constant in self.__constants
-
     def __init__(self):
         if SymbolTable.__instance:
             raise Exception(
@@ -190,4 +189,3 @@ class SymbolTable:
             self.__var_to_assign = Stack()
             self.__for_ids = Stack()
             self.__current_params = []
-            self.__constants = []

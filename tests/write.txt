@@ -1,0 +1,18 @@
+program writetest;
+hivar
+    int : i;
+    float : j;
+byevar
+
+main() {
+    i = 12345;
+    j = 3.14;
+    write("i = ");
+    write(i);
+    write("\nj = ");
+    write(j);
+    write("\nHello, world!\n");
+    write("escaped \"\" quotes\n");
+    write("escaped \\n newline\n");
+    write("escaped \\ backslash\n");
+};

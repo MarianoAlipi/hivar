@@ -13,6 +13,7 @@ main() {
         from B = 2 to 5 do {
             C = C + 1;
             write(C);
+            write("\n");
         };
     };
 };

@@ -38,7 +38,9 @@ main () {
 
     result = fibRecursivo(10);
     write(result);
+    write("\n");
     result = fibIterativo(10);
     write(result);
+    write("\n");
 
 };
