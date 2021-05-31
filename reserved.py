@@ -50,9 +50,10 @@ tokens = [
     'DIVIDE',
     'AND',
     'OR',
+    'EXCLAMATION',
     'ID',
     'CONST_INT',
     'CONST_FLOAT',
-    'CONST_STRING',
-    'EXCLAMATION'
+    'CONST_CHAR',
+    'CONST_STRING'
 ] + list(reserved.values())
