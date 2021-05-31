@@ -2,19 +2,22 @@ from utils.semantics import match_operators
 from structures.quadruples import Quad
 from structures.func_directory import (get_return_var_id, set_return_var_id,
                                        save_temp_var_to_directory, get_params_from_func_id)
-# evals
+
+###
+# functions used for evaluations
+###
 
 
 def eval_exp_or_term(st):
+    # creates operation quad
+    # gets operands and operators, matches types, creates temp var and quad
     right_op = st.operands().pop()
     right_type = st.op_types().pop()
     left_op = st.operands().pop()
     left_type = st.op_types().pop()
     operator = st.operators().pop()
-
     res_type = match_operators(left_type, right_type, operator)
     temp_var_name = get_temp_var_name(st, res_type)
-    #print(f'{left_op}.{left_type} {operator} {right_op}.{right_type} = {temp_var_name}.{res_type}')
     st.save_temp_var(temp_var_name, res_type)
 
     quad = Quad(operator, left_op, right_op, temp_var_name)
@@ -23,10 +26,13 @@ def eval_exp_or_term(st):
     st.operands().push(temp_var_name)
     st.op_types().push(res_type)
 
-# assign
+###
+# functions used for assignment statement
+###
 
 
 def assign_to_var(st):
+    # creates assignation quad for simple vars and type matches
     right_op = ''
     left_op = st.operands().pop()
     left_type = st.op_types().pop()
@@ -41,6 +47,7 @@ def assign_to_var(st):
 
 
 def assign_func_to_var(st, p):
+    # creates assignation quad for when assignment is a func call
     res_var = st.var_to_assign().pop()
     res_var_type = st.current_scope().get_var_from_id(res_var).var_type()
     func_id = p[-1][0]
@@ -51,7 +58,9 @@ def assign_func_to_var(st, p):
     quad = Quad('ASSGN', res_var, '', func_id)
     st.quads().append(quad)
 
-#func_calls and params
+###
+# functions used for fun_calls and param handling
+###
 
 
 def create_param_assignment_quads(st):
@@ -62,6 +71,7 @@ def create_param_assignment_quads(st):
     full_params = function.params()
     for full_param in full_params:
         param_keys.append(full_param[1])
+    # for each param, creates a param quad with the value and id (type matches)
     for i in range(len(param_keys)):
         left_type = st.current_scope().get_var_from_id(
             param_vals[i]).var_type()
@@ -77,26 +87,27 @@ def create_param_assignment_quads(st):
             )
         param_quad = Quad('param', param_vals[i], '', param_keys[i])
         st.quads().append(param_quad)
+    # after setting each param, it adds the gosub
     func_jump = st.pending_jumps().pop()
     st.quads().append(func_jump)
 
 
 def set_return_val(st):
+    # type matching
     function_type = st.current_scope().get_func_from_id(
         st.current_scope_name()).return_type()
-    try:
-        var_type = st.current_scope().get_var_from_id(st.operands().top()).var_type()
-    except Exception as err:
-        print(err)
-        breakpoint()
+    var_type = st.current_scope().get_var_from_id(st.operands().top()).var_type()
     if function_type != var_type:
         raise Exception(
             f'Problem while returning val for function {st.current_scope_name()} types do not match. function_type: {function_type}, var_type: {var_type}')
+    # creates quad with the value that it must return
     return_quad = Quad('return', '', '', st.operands().top())
     st.quads().append(return_quad)
     set_return_var_id(st.current_scope_name(), st.operands().pop())
 
+###
 # utils
+###
 
 
 def get_temp_var_name(st, temp_type):

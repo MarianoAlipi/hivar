@@ -26,6 +26,7 @@ class Variable:
         self.__dims = (self.dims(), j)
 
     def i(self):
+        # we only call these when it's specified that a value has dims, so we raise exceptions when they dont have any
         dims = self.dims()
         if not dims:
             raise Exception(f'trying to access i for atomic var {self.__name}')
@@ -35,6 +36,7 @@ class Variable:
             return dims
 
     def j(self):
+        # we only call these when it's specified that a value has dims, so we raise exceptions when they dont have any
         dims = self.dims()
         if not dims:
             raise Exception(f'trying to access j for atomic var {self.__name}')
@@ -44,10 +46,12 @@ class Variable:
             raise Exception(f'trying to access j for array var {self.__name}')
 
     def get_size(self):
+        # size refers to the amount of memory spaces needed
         dims = self.dims()
         if not dims:
             return 1
         elif type(dims) is tuple:
+            # rows * cols
             return dims[0] * dims[1]
         else:
             return dims

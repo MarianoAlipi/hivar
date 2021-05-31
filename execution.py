@@ -14,6 +14,7 @@ def is_cte(operand):
 
 
 def init_memory(memory, func_id):
+    # get local vars and insert each in its memory
     new_vars = get_local_vars_from_id(func_id)
     if func_id == 'global':
         global_mem = memory.get_global_memory()
@@ -21,7 +22,10 @@ def init_memory(memory, func_id):
             try:
                 has_dims = has_dimensions(var[0])
             except Exception:
+                # if execution fails, then it has no dims
                 has_dims = False
+
+            # inits memory according to if it's an array/matrix, object or simple var
             if has_dims:
                 var_size = get_size(var[0])
                 global_mem.init_array(var[0], var[1], 'global', var_size)
@@ -32,12 +36,16 @@ def init_memory(memory, func_id):
 
         return global_mem
     else:
+        # if execution fails, then it has no dims
         local_mem = MemoryChunk()
         for var in new_vars:
             try:
                 has_dims = has_dimensions(var[0])
             except Exception:
+                # if execution fails, then it has no dims
                 has_dims = False
+
+             # inits memory according to if it's an array/matrix, object or simple var
             if has_dims:
                 var_size = get_size(var[0])
                 local_mem.init_array(var[0], var[1], 'local', var_size)
@@ -49,6 +57,8 @@ def init_memory(memory, func_id):
 def process_quad(vm, quad):
     op, left, right, res = quad.unpack()
     memory = Memory.get()
+
+    # giant switch statement according to instruction
     if op == '=':
         if is_cte(left):
             memory.active_memory().set_cte_val_for_id(res, left)
@@ -99,17 +109,19 @@ def process_quad(vm, quad):
         vm.point_to_next_quad()
     elif op == 'ERA':
         local_memory = init_memory(memory, res)
-        # la guardamos por mientras y está en top por si
+        # save new memory on top of tthe execution stack for later
         vm.execution_stack().push(local_memory)
         vm.point_to_next_quad()
     elif op == 'gosub':
-        # +2 porque +1 te apunta al quad que lees ahorita, y otro +1 después de endfunc quieres ir a sig quad
+        # +2 because +1 te points to the quad we're reading now, and another +1 to go to the quad AFTER the func ends
         vm.jump_stack().push(vm.instruction_pointer()+2)
+        # gets where to go using function directory
         func_start = get_func_from_directory(res)
         vm.set_instruction_pointer(func_start)
-
+        # assign params and then clear them
         assign_params(vm, memory, res)
         vm.clear_func_params()
+        # finally push new memory stack
         memory.locals_memory_stack().push(vm.execution_stack().pop())
     elif op == 'param':
         param_address = memory.active_memory().find_address(left)
@@ -118,17 +130,20 @@ def process_quad(vm, quad):
     elif op == 'return':
         res_address = memory.active_memory().find_address(res)
         res_value = memory.get_value_from_address(res_address)
+        # save the return value in the stack because we will eventually erase the memory, so we don't lose it forever
         vm.execution_stack().push(res_value)
         vm.point_to_next_quad()
     elif op == 'endfunc':
         vm.set_instruction_pointer(vm.jump_stack().pop())
         memory.locals_memory_stack().pop()
     elif op == 'ASSGN':
+        # special operation for assigning values among scopes
         res_address = memory.active_memory().find_address(left)
         res_value = vm.execution_stack().pop()
         memory.assign_value_to_address(res_value, res_address)
         vm.point_to_next_quad()
     elif op == 'verifya':
+        # used to verify array index
         res_value = memory.active_memory().get_value(right)
         if res_value >= res:
             raise Exception(
@@ -137,6 +152,7 @@ def process_quad(vm, quad):
         array_index().push(right)
         vm.point_to_next_quad()
     elif op == 'verifyr':
+        # used to verify matrix row index
         res_value = memory.active_memory().get_value(right)
         if res_value >= res:
             raise Exception(
@@ -145,6 +161,7 @@ def process_quad(vm, quad):
         matrix_index().push(res_value)
         vm.point_to_next_quad()
     elif op == 'verifyc':
+        # used to verify matrix column index
         res_value = memory.active_memory().get_value(right)
         if res_value >= res:
             raise Exception(
@@ -160,9 +177,12 @@ def process_quad(vm, quad):
 
 
 def assign_params(vm, memory, func_id):
+    # gets a list of the paramms to assign and their types
     params_to_assign = FuncDirectory[func_id]['params']
+    # where params are holds the directions values (in order) of the params
     where_params_are = vm.get_func_params()
     for i in range(0, len(params_to_assign)):
+        # finds where the addresses are, gets the value that will fill them, and assigns it
         address_to_fill = vm.execution_stack().top(
         ).find_address(params_to_assign[i][1])
         value_to_fill_with = memory.get_value_from_address(where_params_are[i])

@@ -4,6 +4,7 @@ from utils.runtime import has_dimensions
 from structures.index_handler import matrix_index, array_index
 SIZE = 1000
 
+# assigns inital memory addresses
 ranges = {
     'global': {
         'int': SIZE*1, 'float': SIZE*2, 'bool': SIZE*3, 'char': SIZE*4
@@ -19,6 +20,7 @@ ranges = {
     },
 }
 
+#the keys will be the literal memory values, there are no scope distinctions (as in real memory)
 literal_memory = {}
 
 # from structures.memory import print_literal_memory, literal_memory
@@ -55,16 +57,18 @@ class MemoryChunk:
 
         # TODOBJ checar si es un objeto, si si la dimension es base + N de params
 
+        # gets each type of var and checks if the var_id is in there, if it's not, continue to other vars
+
         ints = self.get_vars('int')
         if var_id in ints:
             if has_dims:
                 base = ints[var_id]
-                if type(has_dims) == tuple:
+                if type(has_dims) == tuple: #if it's a matrix
                     mat_index = matrix_index().pop()
                     row = mat_index[0]
                     col = mat_index[1]
                     return base + (has_dims[1] * row) + col
-                else:
+                else: #if it's an array
                     offset = array_index().pop()
                     return base + offset
             return ints[var_id]
@@ -111,6 +115,7 @@ class MemoryChunk:
                     return base + offset
             return chars[var_id]
 
+        #if it didnt find it in the vars, chec the constants
         memory = Memory.get()
         constants = memory.get_constants()
         address = constants.find_address(var_id)
@@ -119,14 +124,13 @@ class MemoryChunk:
     def init_object(self, var_id, address_type, scope):
         # WIP
         try:
-            # consige el arr de ese tipo
+            # gets the vars from that type
             assigned_address = self.get_vars(address_type)
-
-            # ponle de valor, la direccion de memoria base (la primera que sigue, con el tamaño le puedes sumar las n al indexar)
+            # the index is the base memory address and we set it to the address
             memory_index = ranges[scope][address_type]
             assigned_address[var_id] = memory_index
 
-            attrs = get_attributes()
+            #attrs = get_attributes()
 
             # por cada attr quita un memory_index y asigna none a la literal:memory
             for _ in range(attrs):
@@ -143,14 +147,12 @@ class MemoryChunk:
 
     def init_array(self, var_id, address_type, scope, var_size):
         try:
-            # consige el arr de ese tipo
+            # get the vars that are that type
             assigned_address = self.get_vars(address_type)
-
-            # ponle de valor, la direccion de memoria base (la primera que sigue, con el tamaño le puedes sumar las n al indexar)
+            # the index is the base memory address and we set it to the address
             memory_index = ranges[scope][address_type]
             assigned_address[var_id] = memory_index
-
-            # por cada variable quita un memory_index y asigna none a la literal:memory
+            # for each variable set one more to the index and assign the space to literal memory
             for _ in range(var_size):
                 memory_index = memory_index+1
                 ranges[scope][address_type] = memory_index
@@ -159,23 +161,22 @@ class MemoryChunk:
         except Exception as err:
             print(err)
             breakpoint()
-        self.__memory_left[address_type] -= 1
+        
+        # set new array size and chec that there's still space
+        self.__memory_left[address_type] -= var_size
         if self.__memory_left[address_type] <= 0:
             raise Exception(f'OUT OF MEMORY. type = {address_type}')
 
     def init_address(self, var_id, address_type, scope):
         try:
-            # consige el arr de ese tipo
+            # get the vars that are that type
             assigned_address = self.get_vars(address_type)
-
-            # ponle de valor, la direccion de memoria
+            # the index is the base memory address and we set it to the address
             memory_index = ranges[scope][address_type]
             assigned_address[var_id] = memory_index
-
-            # sube el index de la dir de memoria
+            # set the new index in memory
             ranges[scope][address_type] = memory_index + 1
-
-            # seteala vacia pq solo las famos de alta
+            # init as empty, fill later
             literal_memory[memory_index] = None
         except Exception as err:
             print(err)
@@ -194,6 +195,7 @@ class MemoryChunk:
         literal_memory[address] = value
 
     def print(self):
+        #internal method, used for debugging
         ints = self.get_vars('int')
         print('ints', ints)
         floats = self.get_vars('float')
@@ -206,6 +208,7 @@ class MemoryChunk:
     def get_value(self, var_id):
         address = self.find_address(var_id)
         if not address:
+            # if theres no address, then it's a constant, get value from there
             memory = Memory.get()
             constants = memory.get_constants()
             constant_value = constants.get_value(var_id)
@@ -263,6 +266,7 @@ class Memory:
         return self.__ctes
 
     def add_constant(self, constant, constant_type):
+        # constants are always in the global scope so that they can be available from anywhere
         ctes = self.get_constants()
         ctes.init_address(constant, constant_type, 'global')
         ctes.set_cte_val_for_id(constant, constant)
@@ -271,6 +275,7 @@ class Memory:
         return self.__locals
 
     def active_memory(self):
+        # most recent memory in the stack
         return self.locals_memory_stack().top()
 
     def get_value_from_address(self, address):

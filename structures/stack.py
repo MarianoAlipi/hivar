@@ -12,7 +12,7 @@ def is_empty(self):
 
 
 def push_operator(st, op):
-    if op == '(':
+    if op == '(': #handling for false bottom
         st.operands_stacks().push(st.operands())
         st.set_operands(Stack())
 
@@ -26,7 +26,7 @@ def push_operator(st, op):
 
 
 def pop_operator(st, op):
-    if op == ')':
+    if op == ')':#handling for false bottom removal
         try:
             prev_operands = st.operands_stacks().pop()
             st.set_operands(prev_operands)

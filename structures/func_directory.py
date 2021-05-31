@@ -13,6 +13,7 @@ func_prefix = ''
 #   params -> list of str tuples(id, type)
 #   local_vars -> st of str tuples(id, type)
 
+
 # INTERNAL METHODS
 
 def prefix(func_id):
@@ -22,6 +23,7 @@ def prefix(func_id):
 
 
 def validate_existing(func_id, continue_execution=False):
+    # checks if a function exists, can raise exception or continue execution if specified
     if prefix(func_id) not in FuncDirectory:
         if continue_execution:
             return False
@@ -37,10 +39,9 @@ def validate_new(func_id):
             f'Function "{func_id}" already in funcdirectory')
     return prefix(func_id)
 
-# USED FOR DEBUGGING ONLY
-
 
 def get():
+    # USED FOR DEBUGGING ONLY
     return FuncDirectory
 
 
@@ -51,7 +52,8 @@ def set_return_quad(func_id, returning_quad):
 
 
 def set_return_quad_val(func_id, return_to):
-    # se llama despues del = de una func call y settea el valor del return quad a 1+ el counter
+    # called after the = iin a func_call
+    # return_to is the returning quad index + 1 (next quad)
     func_id = validate_existing(func_id)
     FuncDirectory[func_id]['return'].set_res(return_to)
 
@@ -68,6 +70,7 @@ def get_return_var_id(func_id):
 
 def save_func_to_directory(func_id, starting_quad_position):
     func_id = validate_new(func_id)
+    # creates a new function with empty vals as placeholders
     FuncDirectory[func_id] = {
         'dir': starting_quad_position, 'return': None, 'return_var': None, 'params': None, 'local_vars': None}
 
@@ -78,6 +81,7 @@ def set_starting_quad_to_func(func_id, starting_quad_position):
 
 
 def get_func_from_directory(func_id):
+    # gets the starting quad index
     func_id = validate_existing(func_id)
     return FuncDirectory[func_id]['dir']
 
@@ -91,35 +95,31 @@ def get_params_from_func_id(func_id):
 
 
 def save_params_to_directory(st):
-    # rn im saving jsut the params, in the future we can use these to calculate how much space will be needed
+    # gets function object using scope name to get params
     func_id = st.current_scope_name()
     func_obj = st.current_scope().get_func_from_id(func_id)
     params = func_obj.params()
-
-    # will be useful if we save size
-    #total_size = 0
-    #var_objects = st.current_scope().vars()
-    # for param in params:
-    #    if param[1] in var_objects:
-    #        total_size += var_objects[param[1]].get_size()
 
     func_id = validate_existing(func_id)
     FuncDirectory[func_id]['params'] = params
 
 
 def save_local_vars_to_directory(st):
+    # gets all vars fromm current scope and saves them to directory
     local_vars = st.current_scope().vars()
     func_id = st.current_scope_name()
     func_id = validate_existing(func_id)
     formatted_vars = []
     for key in local_vars:
         try:
-            if type(local_vars[key]) == dict:  # si son objetos
+            if type(local_vars[key]) == dict:  # only object vars are dicts
+                # for objects, get the attrs and set each as a var
                 attributes = local_vars[key]
                 for attr in attributes:
                     formatted_vars.append(
                         (attributes[attr].name(), attributes[attr].var_type()))
             else:
+                # for simple vars, jusut add them directly
                 formatted_vars.append(
                     (local_vars[key].name(), local_vars[key].var_type()))
         except Exception as err:
@@ -129,6 +129,7 @@ def save_local_vars_to_directory(st):
 
 
 def save_temp_var_to_directory(st, var_name, var_type):
+    # saves temmp vars as local vars to be used in ERA
     func_id = st.current_scope_name()
     func_id = validate_existing(func_id)
     FuncDirectory[func_id]['local_vars'].append((var_name, var_type))

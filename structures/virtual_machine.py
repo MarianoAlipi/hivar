@@ -15,6 +15,7 @@ class VirtualMachine:
         return VirtualMachine.__instance
 
     def instruction_pointer(self):
+        # keeps track of quad index
         return self.__ip
 
     def set_instruction_pointer(self, index):
@@ -24,6 +25,7 @@ class VirtualMachine:
         self.__ip = self.__ip + 1
 
     def execute_quads(self):
+        # main memthod
         quads = self.__quads
         while self.instruction_pointer() < len(quads):
             process_quad(self, quads[self.instruction_pointer()])

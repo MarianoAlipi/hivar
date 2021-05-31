@@ -16,6 +16,7 @@ class Scope:
         return self.__vars
 
     def scopes(self):
+        # a scope can have other scopes, ex: global has class scopes, class scope have method scopes
         return self.__scopes
 
     def parent(self):
@@ -45,6 +46,7 @@ class Scope:
         if new_name in self.funcs():
             raise Exception(
                 f'Function "{new_name}" is already declared in this scope')
+        # creates new function with empty params, params will be added later
         self.__funcs[new_name] = Function(new_name, func_type, [])
         return self.__funcs[new_name]
 
@@ -58,6 +60,7 @@ class Scope:
         if new_name in self.vars():
             raise Exception(
                 f'Variable "{new_name}" is already declared in this scope')
+        # checks that the class actually exists
         if var_type not in global_scope.scopes():
             raise Exception(
                 f'class "{var_type}" not found in global scope')
@@ -67,15 +70,17 @@ class Scope:
         for attr in attributes:
             var_attrs[attr] = Variable(
                 attr, class_scope.vars()[attr].var_type())
+        # sets the attributes as the content in the var. 
         self.__vars[new_name] = var_attrs
 
     def get_var_from_id(self, var_id):
         if var_id in self.vars():
             return self.vars()[var_id]
-        elif type(var_id) == tuple:
+        elif type(var_id) == tuple: #objects are tuples of (instance, attribute)
             object_var = self.get_var_from_id(var_id[0])
             return object_var[var_id[1]]
         else:
+            #checks for vars in higher scopes in case they didnt find it
             parent_scope = self.parent()
             if parent_scope:
                 var = parent_scope.get_var_from_id(var_id)
@@ -90,6 +95,7 @@ class Scope:
         if func_id in self.funcs():
             return self.funcs()[func_id]
         else:
+            #checks for func in higher scopes in case they didnt find it
             parent_scope = self.parent()
             if parent_scope:
                 func = parent_scope.get_func_from_id(func_id)

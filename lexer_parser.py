@@ -109,7 +109,7 @@ def p_assign_main_quad(p):
     '''
     assign_main_quad :
     '''
-    save_main_quad(SymbolTable.get())
+    assign_res_to_main_quad(SymbolTable.get())
 
 
 def p_save_main_quad(p):
@@ -117,7 +117,8 @@ def p_save_main_quad(p):
     save_main_quad :
     '''
     st = SymbolTable.get()
-    assign_res_to_main_quad(st)
+    save_main_quad(st)
+    # creates global as a root
     save_func_to_directory('global', len(st.quads())+1)
 
 
@@ -214,6 +215,7 @@ def p_save_j(p):
     save_j :
     '''
     st = SymbolTable.get()
+    # get var_id by checking which was the last var added
     var_id = [*st.current_scope().vars()][-1]
     var_object = st.current_scope().vars()[var_id]
     var_object.set_j(p[-1])
@@ -224,6 +226,7 @@ def p_save_i(p):
     save_i :
     '''
     st = SymbolTable.get()
+    # get var_id by checking which was the last var added
     var_id = [*st.current_scope().vars()][-1]
     var_object = st.current_scope().vars()[var_id]
     var_object.set_i(p[-1])
@@ -405,12 +408,13 @@ def p_set_attr_as_curr(p):
     '''
     st = SymbolTable.get()
     attr = p[-1]
+    # obj_id is the instance -hoy-
     obj_id = st.current_id()
+    # obj_type will be the class -Fecha-
     obj_type = st.current_type()
+    # get class scope by searching for the class scope in the global scope (where class scopes are stored)
     class_scope = st.scope_stack()[0][1].scopes()[obj_type]
-
     attr_var = class_scope.get_var_from_id(attr)
-
     st.set_curr_id((obj_id, attr))
     st.set_curr_type(attr_var.var_type())
 
@@ -430,6 +434,7 @@ def p_verify_arr_rows(p):
     st = SymbolTable.get()
     curr_id = st.var_to_assign().pop()
     curr_var = st.current_scope().get_var_from_id(curr_id)
+    # curr_id is the variable id, operands pop is the index value, and i is the maximun i val (to verify on runtime)
     verify_quad = Quad('verifya', curr_id, st.operands().pop(), curr_var.i())
     st.set_curr_id(curr_id)
     st.quads().append(verify_quad)
@@ -440,8 +445,10 @@ def p_verify_rows(p):
     verify_rows :
     '''
     st = SymbolTable.get()
+    # doesn't pop id becayse it'll be referenced in verify_cols
     curr_id = st.var_to_assign().top()
     curr_var = st.current_scope().get_var_from_id(curr_id)
+    # curr_id is the variable id, operands pop is the index value, and i is the maximun i val (to verify on runtime)
     verify_quad = Quad('verifyr', curr_id, st.operands().pop(), curr_var.i())
     st.quads().append(verify_quad)
 
@@ -453,6 +460,7 @@ def p_verify_cols(p):
     st = SymbolTable.get()
     curr_id = st.var_to_assign().pop()
     curr_var = st.current_scope().get_var_from_id(curr_id)
+    # curr_id is the variable id, operands pop is the index value, and j is the maximun j val (to verify on runtime)
     verify_quad = Quad('verifyc', curr_id, st.operands().pop(), curr_var.j())
     st.set_curr_id(curr_id)
     st.quads().append(verify_quad)
@@ -466,8 +474,14 @@ def p_set_var_as_curr(p):
     # start always by setting to none, the logic will check if these exists and act accordingly
     curr_var = st.current_scope().get_var_from_id(p[-1])
     st.set_curr_id(p[-1])
+    # curr_vars that are dicts can only be an object, if it is an object, the correct type will be set later
     if type(curr_var) != dict:
         st.set_curr_type(curr_var.var_type())
+    else:
+        breakpoint()
+        # tenemos que meter el tipo para que después lo pueda settear bien, no se que tenemos ahorita pero
+        # mmaybe será algo asi
+        st.set_curr_type(curr_var)
 
 
 def p_expression(p):
@@ -595,7 +609,7 @@ def p_constant(p):
     constant : CONST_INT save_int_var_as_current
              | CONST_FLOAT save_float_var_as_current
     '''
-    #CONST_CHAR save_char_as_current
+    # CONST_CHAR save_char_as_current
     p[0] = p[1]
 
 
@@ -607,6 +621,7 @@ def p_save_int_var_as_current(p):
     st.set_curr_type('int')
     st.set_curr_id(p[-1])
 
+    # handles/resets constant sign
     if st.constant_sign() == '-':
         st.set_curr_id(p[-1] * -1)
     else:
@@ -625,6 +640,7 @@ def p_save_float_var_as_current(p):
     st.set_curr_type('float')
     st.set_curr_id(p[-1])
 
+    # handles/resets constant sign
     if st.constant_sign() == '-':
         st.set_curr_id(p[-1] * -1)
     else:
@@ -641,7 +657,6 @@ def p_func_call(p):
               | ID set_return_quad_val LEFT_PARENTHESIS func_call_1 RIGHT_PARENTHESIS
     '''
     p[0] = tuple(p[1:])
-    # TODO cuando sean objetos algo tendremos que hacer con el func_prefix
 
 
 def p_save_obj_id(p):
@@ -649,12 +664,8 @@ def p_save_obj_id(p):
     save_obj_id :
     '''
     st = SymbolTable.get()
+    # ERAF quad is used when it's a call to a method (class' function)
     era_quad = Quad('ERAF', '', p[-1], '')
-    st.quads().append(era_quad)
-
-
-def create_era_quad(st, func_id):
-    era_quad = Quad('ERA', '', '', func_id)
     st.quads().append(era_quad)
 
 
@@ -681,9 +692,11 @@ def p_set_return_quad_val(p):
     st.pending_jumps().push(func_jump)
     # clear params
     st.reset_current_params()
+    # saves func id in new params, pushes false bottom and creates ERA quad
     st.current_params().append(func_id)
     st.operators().push('(')
-    create_era_quad(st, func_id)
+    era_quad = Quad('ERA', '', '', func_id)
+    st.quads().append(era_quad)
 
 
 def p_func_call_1(p):
@@ -746,6 +759,7 @@ def p_set_returning_quad(p):
     '''
     st = SymbolTable.get()
     returning_quad = Quad('endfunc', '', '', '')
+    # create endfunc quad and set it as the endquad for that scope
     st.quads().append(returning_quad)
     set_return_quad(st.current_scope_name(), returning_quad)
 
@@ -1003,6 +1017,6 @@ def p_save_parameter(p):
     st.save_parameter()
 
 
-# Build the lexer and parser.
+# Build the lexer and parserx.
 lexer = lex.lex()
 parser = yacc.yacc()
