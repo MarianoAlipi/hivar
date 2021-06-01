@@ -4,6 +4,7 @@ from structures.semantics_cube import BOOL
 from utils.exp import get_temp_var_name
 from structures.func_directory import set_starting_quad_to_func, get_return_var_id
 
+
 ###
 # functions for if else handling
 ###
@@ -31,9 +32,11 @@ def create_goto(st):
     # This is the end of the block, so we'll need to insert an if_escape here.
     if_escape = st.if_escapes().top()
     st.quads().append(if_escape)
-    # We now know the target of the last gotof, so set it.
+
+
+def fill_gotof(st):
     last_gotof = st.pending_jumps().pop()
-    last_gotof.set_res(len(st.quads()) + 1)
+    last_gotof.set_res(len(st.quads()) + 2)
 
 
 def create_if_escape(st):
@@ -51,6 +54,7 @@ def decision_end(st):
     # Because we use the object's reference,
     # the result will be in every relevant quad.
     if_escape = st.if_escapes().pop()
+    st.quads().append(if_escape)
     if_escape.set_res(len(st.quads()) + 1)
 
 

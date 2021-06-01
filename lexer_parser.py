@@ -858,14 +858,21 @@ def p_write_expression(p):
 
 def p_decision(p):
     '''
-    decision : IF LEFT_PARENTHESIS expression RIGHT_PARENTHESIS create_gotof create_if_escape block elsif else decision_end
+    decision : IF LEFT_PARENTHESIS expression RIGHT_PARENTHESIS create_gotof create_if_escape block fill_gotof elsif else decision_end
     '''
     p[0] = tuple(p[1:])
 
 
+def p_fill_gotof(p):
+    '''
+    fill_gotof :
+    '''
+    fill_gotof(SymbolTable.get())
+
+
 def p_elsif(p):
     '''
-    elsif : create_goto ELSIF LEFT_PARENTHESIS expression RIGHT_PARENTHESIS create_gotof block elsif
+    elsif : create_goto ELSIF LEFT_PARENTHESIS expression RIGHT_PARENTHESIS create_gotof block fill_gotof elsif
           | empty
     '''
     p[0] = tuple(p[1:])

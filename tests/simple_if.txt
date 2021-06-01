@@ -1,0 +1,17 @@
+program simple_if;
+
+hivar
+    int : x;
+byevar
+
+main() {
+
+    x = 1;
+
+    if (x == 2) {
+        write("true!\n");
+    };
+
+    write("out\n");
+
+};

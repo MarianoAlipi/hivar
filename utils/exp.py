@@ -104,6 +104,8 @@ def set_return_val(st):
     return_quad = Quad('return', '', '', st.operands().top())
     st.quads().append(return_quad)
     set_return_var_id(st.current_scope_name(), st.operands().pop())
+    goto_endfunc = Quad('gotoendfunc', '', '', '')
+    st.quads().append(goto_endfunc)
 
 ###
 # utils

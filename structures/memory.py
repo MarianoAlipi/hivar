@@ -20,7 +20,7 @@ ranges = {
     },
 }
 
-#the keys will be the literal memory values, there are no scope distinctions (as in real memory)
+# the keys will be the literal memory values, there are no scope distinctions (as in real memory)
 literal_memory = {}
 
 # from structures.memory import print_literal_memory, literal_memory
@@ -63,12 +63,12 @@ class MemoryChunk:
         if var_id in ints:
             if has_dims:
                 base = ints[var_id]
-                if type(has_dims) == tuple: #if it's a matrix
+                if type(has_dims) == tuple:  # if it's a matrix
                     mat_index = matrix_index().pop()
                     row = mat_index[0]
                     col = mat_index[1]
                     return base + (has_dims[1] * row) + col
-                else: #if it's an array
+                else:  # if it's an array
                     offset = array_index().pop()
                     return base + offset
             return ints[var_id]
@@ -115,7 +115,7 @@ class MemoryChunk:
                     return base + offset
             return chars[var_id]
 
-        #if it didnt find it in the vars, chec the constants
+        # if it didnt find it in the vars, chec the constants
         memory = Memory.get()
         constants = memory.get_constants()
         address = constants.find_address(var_id)
@@ -161,7 +161,7 @@ class MemoryChunk:
         except Exception as err:
             print(err)
             breakpoint()
-        
+
         # set new array size and chec that there's still space
         self.__memory_left[address_type] -= var_size
         if self.__memory_left[address_type] <= 0:
@@ -195,7 +195,7 @@ class MemoryChunk:
         literal_memory[address] = value
 
     def print(self):
-        #internal method, used for debugging
+        # internal method, used for debugging
         ints = self.get_vars('int')
         print('ints', ints)
         floats = self.get_vars('float')

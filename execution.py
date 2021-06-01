@@ -133,6 +133,9 @@ def process_quad(vm, quad):
         # save the return value in the stack because we will eventually erase the memory, so we don't lose it forever
         vm.execution_stack().push(res_value)
         vm.point_to_next_quad()
+    elif op == 'gotoendfunc':
+        vm.set_instruction_pointer(vm.jump_stack().pop())
+        memory.locals_memory_stack().pop()
     elif op == 'endfunc':
         vm.set_instruction_pointer(vm.jump_stack().pop())
         memory.locals_memory_stack().pop()
