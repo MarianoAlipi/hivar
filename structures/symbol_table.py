@@ -55,7 +55,7 @@ class SymbolTable:
         self.__last_saved_func = saved_func
 
     def save_var(self):
-        if self.current_type() in self.classes():
+        if self.current_type() in self.classes():  # checks if its an object, if it is, then use special method
             global_scope = self.scope_stack()[0][1]
             self.current_scope().add_obj_var(
                 global_scope, self.current_id(), self.current_type())

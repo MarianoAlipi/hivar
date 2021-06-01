@@ -124,7 +124,7 @@ def save_cond_for_quad(st):
 def save_for_assgn_quad(st):
     # creates assignation quad for initial declaration in for loop
     exp_val = st.operands().pop()
-    quad = Quad('=', exp_val, None, st.for_ids().top())
+    quad = Quad('=', exp_val, '', st.for_ids().top())
     st.quads().append(quad)
 
 

@@ -1,6 +1,6 @@
 from collections import deque
 from structures.stack import Stack
-from utils.runtime import has_dimensions
+from utils.runtime import has_dimensions, is_cte
 from structures.index_handler import matrix_index, array_index
 SIZE = 1000
 
@@ -49,7 +49,36 @@ class MemoryChunk:
         if address_type == 'char':
             return self.__char
 
-    def find_address(self, var_id):
+    def find_dim_address(self, var_id, look_deeper=True):
+        # search in local scope
+        ints = self.get_vars('int')
+        if var_id in ints:
+            return ints[var_id], 'int'
+
+        floats = self.get_vars('float')
+        if var_id in floats:
+            return floats[var_id], 'float'
+
+        bools = self.get_vars('bool')
+        if var_id in bools:
+            return bools[var_id], 'bool'
+
+        chars = self.get_vars('char')
+        if var_id in chars:
+            return chars[var_id], 'char'
+
+        # if it didnt find it in local scope, check the constants and global
+        if look_deeper:
+            memory = Memory.get()
+            global_mem = memory.get_global_memory()
+            address, address_type = global_mem.find_dim_address(var_id, False)
+            if not address:
+                raise Exception(
+                    f"couldn't find dim address for var {var_id}")
+            return address, address_type
+        return None, None
+
+    def find_address(self, var_id, search_deeper=True):
         try:
             has_dims = has_dimensions(var_id)
         except Exception:
@@ -57,69 +86,52 @@ class MemoryChunk:
 
         # TODOBJ checar si es un objeto, si si la dimension es base + N de params
 
-        # gets each type of var and checks if the var_id is in there, if it's not, continue to other vars
+        # if it has dims, it finds the value of the arr variable, and then finds the index
+        if has_dims:
+            base, _ = self.find_dim_address(var_id)
+            if type(has_dims) == tuple:  # if it's a matrix
+                mat_index = matrix_index().pop()
+                row = mat_index[0]
+                col = mat_index[1]
+                return base + (has_dims[1] * row) + col
+            else:  # if it's an array
+                offset = array_index().pop()
+                if is_cte(offset):
+                    return base + offset
+                else:
+                    offset_value = self.find_address(offset)
+                    offset_value = literal_memory[offset_value]
+                    return base + offset_value
 
+        # if it doesnt have dims, do a simple lookup
         ints = self.get_vars('int')
         if var_id in ints:
-            if has_dims:
-                base = ints[var_id]
-                if type(has_dims) == tuple:  # if it's a matrix
-                    mat_index = matrix_index().pop()
-                    row = mat_index[0]
-                    col = mat_index[1]
-                    return base + (has_dims[1] * row) + col
-                else:  # if it's an array
-                    offset = array_index().pop()
-                    return base + offset
             return ints[var_id]
 
         floats = self.get_vars('float')
         if var_id in floats:
-            if has_dims:
-                base = floats[var_id]
-                if type(has_dims) == tuple:
-                    mat_index = matrix_index().pop()
-                    row = mat_index[0]
-                    col = mat_index[1]
-                    return base + (has_dims[1] * row) + col
-                else:
-                    offset = array_index().pop()
-                    return base + offset
             return floats[var_id]
 
         bools = self.get_vars('bool')
         if var_id in bools:
-            if has_dims:
-                base = bools[var_id]
-                if type(has_dims) == tuple:
-                    mat_index = matrix_index().pop()
-                    row = mat_index[0]
-                    col = mat_index[1]
-                    return base + (has_dims[1] * row) + col
-                else:
-                    offset = array_index().pop()
-                    return base + offset
             return bools[var_id]
 
         chars = self.get_vars('char')
         if var_id in chars:
-            if has_dims:
-                base = chars[var_id]
-                if type(has_dims) == tuple:
-                    mat_index = matrix_index().pop()
-                    row = mat_index[0]
-                    col = mat_index[1]
-                    return base + (has_dims[1] * row) + col
-                else:
-                    offset = array_index().pop()
-                    return base + offset
             return chars[var_id]
 
         # if it didnt find it in the vars, chec the constants
-        memory = Memory.get()
-        constants = memory.get_constants()
-        address = constants.find_address(var_id)
-        return address
+        if search_deeper:
+            memory = Memory.get()
+            constants = memory.get_constants()
+            address = constants.find_address(var_id, False)
+            if not address:
+                global_mem = memory.get_global_memory()
+                address = global_mem.find_address(var_id, False)
+                if not address:
+                    raise Exception(
+                        f"couldn't find address for var {var_id}")
+            return address
 
     def init_object(self, var_id, address_type, scope):
         # WIP
@@ -130,7 +142,7 @@ class MemoryChunk:
             memory_index = ranges[scope][address_type]
             assigned_address[var_id] = memory_index
 
-            #attrs = get_attributes()
+            # attrs = get_attributes()
 
             # por cada attr quita un memory_index y asigna none a la literal:memory
             for _ in range(attrs):
@@ -186,8 +198,8 @@ class MemoryChunk:
             raise Exception(f'OUT OF MEMORY. type = {address_type}')
 
     def set_val_for_id(self, res_id, value_id):
-        address_to_set = self.find_address(res_id)
         value_address = self.find_address(value_id)
+        address_to_set = self.find_address(res_id)
         literal_memory[address_to_set] = literal_memory[value_address]
 
     def set_cte_val_for_id(self, res_id, value):

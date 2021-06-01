@@ -598,6 +598,14 @@ def p_factor(p):
     p[0] = tuple(p[1:])
 
 
+def p_set_constant_sign(p):
+    '''
+    set_constant_sign :
+    '''
+    st = SymbolTable.get()
+    st.set_constant_sign(p[-1])
+
+
 def p_save_func_call_operand(p):
     '''
     save_func_call_operand :
@@ -612,14 +620,6 @@ def p_save_operand(p):
     st = SymbolTable.get()
     st.operands().push(st.current_id())
     st.op_types().push(st.current_type())
-
-
-def p_set_constant_sign(p):
-    '''
-    set_constant_sign :
-    '''
-    st = SymbolTable.get()
-    st.curr_constant_sign = p[-1]
 
 
 def p_constant(p):
@@ -683,10 +683,17 @@ def p_save_char_var_as_current(p):
 
 def p_func_call(p):
     '''
-    func_call : EXCLAMATION ID save_obj_id PERIOD ID check_if_obj_func_exists LEFT_PARENTHESIS func_call_1 RIGHT_PARENTHESIS
-              | ID set_return_quad_val LEFT_PARENTHESIS func_call_1 RIGHT_PARENTHESIS
+    func_call : EXCLAMATION ID save_obj_id PERIOD ID check_if_obj_func_exists LEFT_PARENTHESIS func_call_1 RIGHT_PARENTHESIS assign_gosub_jump
+              | ID set_return_quad_val LEFT_PARENTHESIS func_call_1 RIGHT_PARENTHESIS assign_gosub_jump
     '''
     p[0] = tuple(p[1:])
+
+
+def p_assign_gosub_jump(p):
+    '''
+    assign_gosub_jump :
+    '''
+    assign_gosub_jump(SymbolTable.get())
 
 
 def p_save_obj_id(p):

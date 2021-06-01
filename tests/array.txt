@@ -13,22 +13,37 @@ function int find (int : val) {
     from i = 0 to 6 do {
         if (arr[i] == val) {
             return (i);
+        } else {
+            i = i;
         };
     };
 
     return (-1);
 };
 
+function void printArray () {
+    hivar
+        int : x, j;
+    byevar
+
+    from x = 0 to 6 do {
+        j = arr[x];
+        write(j);
+        write(", ");
+    };
+    write("\n");
+};
+
+
 function void sort () {
     hivar
-        int : i, temp, swaps;
+        int : i, temp, swaps, j;
     byevar
 
     swaps = 1;
 
     while (swaps > 0) do {
         swaps = 0;
-
         from i = 0 to 5 do {
             if (arr[i] > arr[i + 1]) {
                 temp = arr[i];
@@ -41,18 +56,6 @@ function void sort () {
 
 };
 
-function void printArray () {
-    hivar
-        int : i;
-    byevar
-
-    from i = 0 to 6 do {
-        write(arr[i]);
-        write(", ");
-    };
-    write("\n");
-};
-
 main() {
 
     arr[0] = 6;
@@ -62,7 +65,7 @@ main() {
     arr[4] = 2;
     arr[5] = 1;
 
-    write("Initial array:\n");
+    write("\nInitial array: ");
     printArray();
 
     i = find(5);
@@ -73,7 +76,7 @@ main() {
     write("\nindex of 10: ");
     write(i);
 
-    write("Sorted array:\n");
+    write("\nSorted array: ");
     sort();
     printArray();
 

@@ -1,16 +1,7 @@
 from structures.memory import Memory, MemoryChunk, print_literal_memory
 from structures.func_directory import get_local_vars_from_id, FuncDirectory, get_func_from_directory
-from utils.runtime import has_dimensions, get_size
+from utils.runtime import has_dimensions, get_size, is_cte
 from structures.index_handler import matrix_index, array_index
-
-
-def is_cte(operand):
-    # boolean cte
-    if operand == 'True' or operand == 'False':
-        return True
-    # char cte?
-    # numeric cte
-    return type(operand) == int or type(operand) == float
 
 
 def init_memory(memory, func_id):
@@ -57,7 +48,6 @@ def init_memory(memory, func_id):
 def process_quad(vm, quad):
     op, left, right, res = quad.unpack()
     memory = Memory.get()
-
     # giant switch statement according to instruction
     if op == '=':
         if is_cte(left):

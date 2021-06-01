@@ -16,3 +16,11 @@ def get_size(var_id):
     st = SymbolTable.get()
     var = st.current_scope().get_var_from_id(var_id)
     return var.get_size()
+
+
+def is_cte(operand):
+    # boolean cte
+    if operand == 'True' or operand == 'False':
+        return True
+    # numeric cte
+    return type(operand) == int or type(operand) == float

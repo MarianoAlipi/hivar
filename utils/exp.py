@@ -87,7 +87,10 @@ def create_param_assignment_quads(st):
             )
         param_quad = Quad('param', param_vals[i], '', param_keys[i])
         st.quads().append(param_quad)
-    # after setting each param, it adds the gosub
+
+
+def assign_gosub_jump(st):
+    # last thing done after a func call, it sets the function jump
     func_jump = st.pending_jumps().pop()
     st.quads().append(func_jump)
 

@@ -8,7 +8,7 @@ byevar
 
 main() {
     A = 1;
-    C = "c";
+    C = 'c';
     
     write("A ");
     write(A);
