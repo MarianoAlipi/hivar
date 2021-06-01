@@ -2,8 +2,7 @@ program Team_pp;
 
 class Persona {
     attributes
-        int : edad;
-        char : nombre[30];
+        int : edad, identificador;
         float : matrix[10, 5];
 
     methods
@@ -32,13 +31,14 @@ function int fact (int : j) {
 
 function void pelos (int : y) {
     hivar
-        int : x;
+        int : x, res;
     byevar
 
     read(estudiante.edad);
     x = y;
     while (x < 10) do {
-        write(estudiante.UNO(x));
+        res = !estudiante.UNO(x);
+        write(res);
         x = x + 1;
     };
 };
@@ -47,10 +47,12 @@ main() {
     read(p);
     j = p * 2;
     i = fact(p);
+    write("dame el id del estudiante: ");
     read(i);
-    estudiante.nombre = i;
+    estudiante.identificador = i;
     pelos(p);
     from i = 1 to 10 do {
-        write("HelloWorld", alumno.nombre, fact(alumno.edad));
+        write("HelloWorld \n");
+        write(fact(estudiante.edad));
     };
 };

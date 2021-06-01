@@ -46,11 +46,14 @@ def assign_to_var(st):
     st.quads().append(quad)
 
 
-def assign_func_to_var(st, p):
+def assign_func_to_var(st, params):
     # creates assignation quad for when assignment is a func call
     res_var = st.var_to_assign().pop()
     res_var_type = st.current_scope().get_var_from_id(res_var).var_type()
-    func_id = p[-1][0]
+    func_id = params[-1][0]
+    if func_id == '!':  # this happens when it's a call to a method
+        # 4 because 1 is !, 2 is obj_id, 3 is . and 4 is method_id
+        func_id = params[-1][4]
     func_return_type = st.current_scope().get_func_from_id(func_id).return_type()
     if res_var_type != func_return_type:
         raise Exception(

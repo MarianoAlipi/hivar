@@ -78,13 +78,19 @@ class MemoryChunk:
             return address, address_type
         return None, None
 
+    def find_object_address(self, var_id):
+        attr_id = var_id[1]
+        return self.find_address(attr_id)
+
     def find_address(self, var_id, search_deeper=True):
+        # for objects look for the attribute
+        if type(var_id) == tuple:
+            return self.find_address(var_id[1])
+
         try:
             has_dims = has_dimensions(var_id)
         except Exception:
             has_dims = False
-
-        # TODOBJ checar si es un objeto, si si la dimension es base + N de params
 
         # if it has dims, it finds the value of the arr variable, and then finds the index
         if has_dims:

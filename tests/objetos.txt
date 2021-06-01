@@ -10,18 +10,26 @@ class Fecha {
         };
 
         function void print_fecha() {
-            write(30);
-            write(5);
-            write(2021);
+            write(dia);
+            write("\n");
+            write(mes);
+            write("\n");
+            write(anio);
+            write("\n");
         };
 };
 
 hivar
-    int : d, m, a;
+    int : res;
     Fecha : hoy;
 byevar
 
 main() {
+    hoy.dia = 2;
+    hoy.mes = 5;
+    hoy.anio = 2021;
     !hoy.print_fecha();
-    hoy.dia = 1;
+    res = !hoy.multiplica(10);
+    write(res);
+    write("\n");
 };

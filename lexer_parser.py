@@ -496,10 +496,7 @@ def p_set_var_as_curr(p):
     if type(curr_var) != dict:
         st.set_curr_type(curr_var.var_type())
     else:
-        breakpoint()
-        # tenemos que meter el tipo para que después lo pueda settear bien, no se que tenemos ahorita pero
-        # mmaybe será algo asi
-        st.set_curr_type(curr_var)
+        st.set_curr_type(curr_var['type'])
 
 
 def p_expression(p):
@@ -713,7 +710,17 @@ def p_check_if_obj_func_exists(p):
     st = SymbolTable.get()
     #func_id = st.func_prefix() + "." + p[-1]
     func_id = validate_existing(p[-1])
-    st.quads()[-1].set_res(func_id)
+    eraf_quad = st.quads()[-1]
+    eraf_quad.set_res(func_id)
+
+    func_jump = Quad('gosub', '', eraf_quad.right_op(), func_id)
+    st.pending_jumps().push(func_jump)
+
+    # clear params
+    st.reset_current_params()
+    # saves func id in new params, pushes false bottom and creates ERA quad
+    st.current_params().append(func_id)
+    st.operators().push('(')
 
 
 def p_set_return_quad_val(p):
@@ -725,7 +732,7 @@ def p_set_return_quad_val(p):
     if not validate_existing(func_id, True):
         raise Exception(
             f"Function {func_id} not found in scope {st.current_scope_name()}")
-    func_jump = Quad('gosub', None, None, func_id)
+    func_jump = Quad('gosub', '', '', func_id)
     st.pending_jumps().push(func_jump)
     # clear params
     st.reset_current_params()
@@ -749,7 +756,10 @@ def p_assign_params(p):
     assign_params :
     '''
     st = SymbolTable.get()
-    st.operators().pop()
+    try:
+        st.operators().pop()
+    except Exception:
+        pass
     create_param_assignment_quads(st)
 
 

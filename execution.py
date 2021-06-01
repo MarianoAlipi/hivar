@@ -45,6 +45,15 @@ def init_memory(memory, func_id):
         return local_mem
 
 
+def init_object_func_memory(memory, var_id, method_id):
+    # get local vars and insert each in its memory
+    new_vars = get_local_vars_from_id(method_id)
+    local_mem = MemoryChunk()
+    for var in new_vars:
+        local_mem.init_address(var[0], var[1], 'local')
+    return local_mem
+
+
 def process_quad(vm, quad):
     op, left, right, res = quad.unpack()
     memory = Memory.get()
@@ -100,6 +109,10 @@ def process_quad(vm, quad):
     elif op == 'ERA':
         local_memory = init_memory(memory, res)
         # save new memory on top of tthe execution stack for later
+        vm.execution_stack().push(local_memory)
+        vm.point_to_next_quad()
+    elif op == 'ERAF':
+        local_memory = init_object_func_memory(memory, right, res)
         vm.execution_stack().push(local_memory)
         vm.point_to_next_quad()
     elif op == 'gosub':

@@ -67,20 +67,21 @@ class Scope:
         class_scope = global_scope.scopes()[var_type]
         attributes = class_scope.attributes()
         var_attrs = {}
+        var_attrs['type'] = var_type
         for attr in attributes:
             var_attrs[attr] = Variable(
                 attr, class_scope.vars()[attr].var_type())
-        # sets the attributes as the content in the var. 
+        # sets the attributes as the content in the var.
         self.__vars[new_name] = var_attrs
 
     def get_var_from_id(self, var_id):
         if var_id in self.vars():
             return self.vars()[var_id]
-        elif type(var_id) == tuple: #objects are tuples of (instance, attribute)
+        elif type(var_id) == tuple:  # objects are tuples of (instance, attribute)
             object_var = self.get_var_from_id(var_id[0])
             return object_var[var_id[1]]
         else:
-            #checks for vars in higher scopes in case they didnt find it
+            # checks for vars in higher scopes in case they didnt find it
             parent_scope = self.parent()
             if parent_scope:
                 var = parent_scope.get_var_from_id(var_id)
@@ -95,16 +96,20 @@ class Scope:
         if func_id in self.funcs():
             return self.funcs()[func_id]
         else:
-            #checks for func in higher scopes in case they didnt find it
+            # checks for func in higher scopes in case they didnt find it
             parent_scope = self.parent()
             if parent_scope:
                 func = parent_scope.get_func_from_id(func_id)
                 if func:
                     return func
-                return None
             else:
+                # si no tiene parent scope, es porque ya esta en el global, busca en cada clase el método
+                for scope in self.scopes():
+                    if func_id in self.scopes()[scope].funcs():
+                        return self.scopes()[scope].funcs()[func_id]
+                breakpoint()
                 raise Exception(
-                    f'Can not find function "{func}"')
+                    f'Can not find function "{func_id}"')
 
     def add_attribute(self, attr):
         self.__attributes.append(attr)

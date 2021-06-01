@@ -116,6 +116,8 @@ def save_local_vars_to_directory(st):
                 # for objects, get the attrs and set each as a var
                 attributes = local_vars[key]
                 for attr in attributes:
+                    if attr == 'type':
+                        continue
                     formatted_vars.append(
                         (attributes[attr].name(), attributes[attr].var_type()))
             else:
