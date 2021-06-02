@@ -5,15 +5,15 @@ class Fecha {
         int : anio, dia, mes;
 
     methods
-        function int multiplica (int : x) {
+        function int multiplica_dia (int : x) {
             return (dia * x);
         };
 
         function void print_fecha() {
             write(dia);
-            write("\n");
+            write("/");
             write(mes);
-            write("\n");
+            write("/");
             write(anio);
             write("\n");
         };
@@ -29,7 +29,9 @@ main() {
     hoy.mes = 5;
     hoy.anio = 2021;
     !hoy.print_fecha();
-    res = !hoy.multiplica(10);
+    write(hoy.dia);
+    write("\n");
+    res = !hoy.multiplica_dia(10);
     write(res);
     write("\n");
 };

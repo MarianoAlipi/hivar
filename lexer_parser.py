@@ -1,11 +1,3 @@
-"""
-Roberta González Garza
-A01570010
-
-Mariano García Alipi
-A00822247
-"""
-
 from ply import lex
 from ply import yacc
 from structures.symbol_table import SymbolTable

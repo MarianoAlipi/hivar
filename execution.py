@@ -100,7 +100,7 @@ def process_quad(vm, quad):
             print(to_write, end='')
         else:
             # Search for the ID's value
-            print(memory.active_memory().get_value(res[0]), end='')
+            print(memory.active_memory().get_value(res[-1]), end='')
         vm.point_to_next_quad()
     elif op == 'read':
         user_input = input('>>> ')
@@ -143,11 +143,11 @@ def process_quad(vm, quad):
         # finally push new memory stack
         memory.locals_memory_stack().push(vm.execution_stack().pop())
     elif op == 'param':
-        param_address = memory.active_memory().find_address(left)
+        param_address, _ = memory.active_memory().find_address(left)
         vm.add_func_param(param_address)
         vm.point_to_next_quad()
     elif op == 'return':
-        res_address = memory.active_memory().find_address(res)
+        res_address, _ = memory.active_memory().find_address(res)
         res_value = memory.get_value_from_address(res_address)
         # save the return value in the stack because we will eventually erase the memory, so we don't lose it forever
         vm.execution_stack().push(res_value)
@@ -160,7 +160,7 @@ def process_quad(vm, quad):
         memory.locals_memory_stack().pop()
     elif op == 'ASSGN':
         # special operation for assigning values among scopes
-        res_address = memory.active_memory().find_address(left)
+        res_address, _ = memory.active_memory().find_address(left)
         res_value = vm.execution_stack().pop()
         memory.assign_value_to_address(res_value, res_address)
         vm.point_to_next_quad()
@@ -193,9 +193,8 @@ def process_quad(vm, quad):
         matrix_index().push((rows, res_value))
         vm.point_to_next_quad()
     else:
-        breakpoint()
-        quad.print()
-        vm.point_to_next_quad()
+        raise Exception(
+            f'unrecognized quad instruction: {op}, {left}, {right}, {res}')
 
 
 def assign_params(vm, memory, func_id):
@@ -205,7 +204,11 @@ def assign_params(vm, memory, func_id):
     where_params_are = vm.get_func_params()
     for i in range(0, len(params_to_assign)):
         # finds where the addresses are, gets the value that will fill them, and assigns it
-        address_to_fill = vm.execution_stack().top(
-        ).find_address(params_to_assign[i][1])
-        value_to_fill_with = memory.get_value_from_address(where_params_are[i])
+        address_to_fill, _ = vm.execution_stack(
+        ).top().find_address(params_to_assign[i][1])
+        value_address = where_params_are[i]
+        # patch in case an object value comes in a tuple with its type
+        if type(value_address) == tuple:
+            value_address = value_address[0]
+        value_to_fill_with = memory.get_value_from_address(value_address)
         memory.assign_value_to_address(value_to_fill_with, address_to_fill)

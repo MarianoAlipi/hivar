@@ -31,7 +31,10 @@ class VirtualMachine:
             process_quad(self, quads[self.instruction_pointer()])
 
     def add_func_param(self, param):
-        self.__func_params.append(param)
+        if type(param) == tuple:
+            self.__func_params.append(param[0])
+        else:
+            self.__func_params.append(param)
 
     def get_func_params(self):
         return self.__func_params

@@ -130,7 +130,10 @@ class MemoryChunk:
         if search_deeper:
             memory = Memory.get()
             constants = memory.get_constants()
-            address, var_type = constants.find_address(var_id, False)
+            try:
+                address, var_type = constants.find_address(var_id, False)
+            except:
+                address = None
             if not address:
                 global_mem = memory.get_global_memory()
                 address, var_type = global_mem.find_address(var_id, False)
@@ -217,7 +220,7 @@ class MemoryChunk:
             else:
                 raise Exception(
                     f'Type mismatch: unable to assign {value} of type {value_type} to ID {res_id} of type {var_type}.'
-                    )
+                )
 
     def print(self):
         # internal method, used for debugging

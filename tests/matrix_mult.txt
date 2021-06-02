@@ -31,6 +31,7 @@ main() {
         };
     };
 
+    write("matriz A: \n");
     from i = 0 to 3 do {
         from j = 0 to 3 do {
             write(matA[i,j]);
@@ -41,6 +42,7 @@ main() {
 
     write("\n");
 
+    write("matriz B: \n");
     from i = 0 to 3 do {
         from j = 0 to 3 do {
             write(matB[i,j]);
@@ -53,6 +55,7 @@ main() {
 
     mult();
 
+    write("matriz A x B: \n");
     from i = 0 to 3 do {
         from j = 0 to 3 do {
             write(matC[i,j]);

@@ -8,20 +8,21 @@ lines = get_file_content("tests/objetos.txt")
 lexer.input(lines)
 
 try:
-    print('Parsing...')
+    print('\nParsing...')
     parser.parse(lines, debug=DEBUG_MODE)
-    print('Correct syntax.')
+    print('Correct syntax.\n')
 except SyntaxError as e:
     print(f'Syntax error: unexpected {e.args[0]}')
 
-
-st = SymbolTable.get()
-st.print_quads()
+if DEBUG_MODE:
+    st = SymbolTable.get()
+    st.print_quads()
 
 try:
+    print('starting execution...')
     vm = VirtualMachine.get()
     vm.execute_quads()
-    print('\nSuccessful execution.')
+    print('Successful execution.')
 except Exception as err:
     raise Exception(
         f'Something went wrong during the execution: {err}'
