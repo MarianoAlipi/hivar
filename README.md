@@ -1,27 +1,37 @@
-# hivar
+# Hivar
 
 Hivar is a toy programming language for the compiler design course. It is an object based language made for educational purposes.
 
 ## Installation
-Download [Python](https://www.python.org/downloads/)  
-Install [PLY](https://pypi.org/project/ply/)  
-Clone this repo:
-```bash
-git clone https://github.com/MarianoAlipi/hivar.git
-```
+
+1. Download and install [Python](https://www.python.org/downloads/).  
+2. Download and install [PLY](https://pypi.org/project/ply/).  
+3. Clone this repository or download it as a `.zip` file.
+
+    ```bash
+    git clone https://github.com/MarianoAlipi/hivar.git
+    ```
 
 ## Usage
-Open a terminal to run the program in.
-Add your `.txt` files with the program you want to run to the 'tests' folder, run the program by running:
-```bash
-python run.py
-```
-and see your output on terminal
 
+Add your source files to the `tests` folder. There are a few examples included.  
+Open a terminal and run:
+
+```bash
+python hivar.py
+```
+
+You can also specify the file to run:
+
+```bash
+python hivar.py tests/helloWorld.txt
+```
+
+and see the output in the terminal.
 
 ## Team
-made with love by
 
+Made with love by
 
 Roberta González Garza A01570010  
 Mariano García Alipi A00822247
