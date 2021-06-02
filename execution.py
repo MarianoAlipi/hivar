@@ -99,8 +99,12 @@ def process_quad(vm, quad):
                 i += 1
             print(to_write, end='')
         else:
-            # Search for the ID's value
-            print(memory.active_memory().get_value(res[-1]), end='')
+            # if it's a matrix or array, use res[0] (dim id)
+            if res[-1] == ']':
+                print(memory.active_memory().get_value(res[-0]), end='')
+            else:
+                # Search for the ID's value using res[-1] (attribute) in case of objects
+                print(memory.active_memory().get_value(res[-1]), end='')
         vm.point_to_next_quad()
     elif op == 'read':
         user_input = input('>>> ')
