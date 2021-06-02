@@ -125,7 +125,6 @@ def save_local_vars_to_directory(st):
                 formatted_vars.append(
                     (local_vars[key].name(), local_vars[key].var_type()))
         except Exception as err:
-            breakpoint()
             print(err)
     FuncDirectory[func_id]['local_vars'] = formatted_vars
 

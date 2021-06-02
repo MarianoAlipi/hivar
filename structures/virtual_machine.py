@@ -25,7 +25,7 @@ class VirtualMachine:
         self.__ip = self.__ip + 1
 
     def execute_quads(self):
-        # main memthod
+        # main method
         quads = self.__quads
         while self.instruction_pointer() < len(quads):
             process_quad(self, quads[self.instruction_pointer()])

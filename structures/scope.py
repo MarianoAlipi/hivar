@@ -107,7 +107,6 @@ class Scope:
                 for scope in self.scopes():
                     if func_id in self.scopes()[scope].funcs():
                         return self.scopes()[scope].funcs()[func_id]
-                breakpoint()
                 raise Exception(
                     f'Could not find function \'{func_id}\'.')
 

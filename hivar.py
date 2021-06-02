@@ -19,6 +19,9 @@ The
 
 if len(sys.argv) >= 2:
     file = sys.argv[1]
+    if len(sys.argv) >= 3:
+        if int(sys.argv[2]) == 1:
+            DEBUG_MODE = 1
 else:
     file = input('File to run: ')
     print()
@@ -47,9 +50,9 @@ try:
     vm = VirtualMachine.get()
     vm.execute_quads()
     print('\n---------------------')
-    print('Successful execution.\n')
+    print('Successful execution.')
 except Exception as err:
     print('\n---------------------')
     print(f'Oh no! Something went wrong during the execution.')
     print(err)
-    print()
+print()
