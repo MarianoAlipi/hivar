@@ -104,7 +104,15 @@ def process_quad(vm, quad):
         vm.point_to_next_quad()
     elif op == 'read':
         user_input = input('>>> ')
-        memory.active_memory().set_cte_val_for_id(res, user_input)
+        val = None
+        try:
+            val = int(user_input)
+        except ValueError:
+            try:
+                val = float(user_input)
+            except ValueError:
+                val = user_input
+        memory.active_memory().set_cte_val_for_id(res[0], val)
         vm.point_to_next_quad()
     elif op == 'ERA':
         local_memory = init_memory(memory, res)

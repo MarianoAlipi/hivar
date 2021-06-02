@@ -830,7 +830,7 @@ def p_read_expression(p):
     read_expression :
     '''
     st = SymbolTable.get()
-    quad = Quad('read', '', '', p[-1])
+    quad = Quad('read', '', '', flatten(p[-1]))
     st.quads().append(quad)
 
 
