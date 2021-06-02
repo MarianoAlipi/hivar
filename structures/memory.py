@@ -94,50 +94,51 @@ class MemoryChunk:
 
         # if it has dims, it finds the value of the arr variable, and then finds the index
         if has_dims:
-            base, _ = self.find_dim_address(var_id)
+            base, var_type = self.find_dim_address(var_id)
             if type(has_dims) == tuple:  # if it's a matrix
                 mat_index = matrix_index().pop()
                 row = mat_index[0]
                 col = mat_index[1]
-                return base + (has_dims[1] * row) + col
+                return base + (has_dims[1] * row) + col, var_type
             else:  # if it's an array
                 offset = array_index().pop()
                 if is_cte(offset):
-                    return base + offset
+                    return base + offset, var_type
                 else:
-                    offset_value = self.find_address(offset)
+                    offset_value, var_type = self.find_address(offset)
                     offset_value = literal_memory[offset_value]
-                    return base + offset_value
+                    return base + offset_value, var_type
 
         # if it doesnt have dims, do a simple lookup
         ints = self.get_vars('int')
         if var_id in ints:
-            return ints[var_id]
+            return ints[var_id], 'int'
 
         floats = self.get_vars('float')
         if var_id in floats:
-            return floats[var_id]
+            return floats[var_id], 'float'
 
         bools = self.get_vars('bool')
         if var_id in bools:
-            return bools[var_id]
+            return bools[var_id], 'bool'
 
         chars = self.get_vars('char')
         if var_id in chars:
-            return chars[var_id]
+            return chars[var_id], 'char'
 
-        # if it didnt find it in the vars, chec the constants
+        # if it didnt find it in the vars, check the constants
         if search_deeper:
             memory = Memory.get()
             constants = memory.get_constants()
-            address = constants.find_address(var_id, False)
+            address, var_type = constants.find_address(var_id, False)
             if not address:
                 global_mem = memory.get_global_memory()
-                address = global_mem.find_address(var_id, False)
+                address, var_type = global_mem.find_address(var_id, False)
                 if not address:
                     raise Exception(
                         f"couldn't find address for var {var_id}")
-            return address
+            return address, var_type
+        raise Exception(f"couldn't find address for var {var_id}")
 
     def init_object(self, var_id, address_type, scope):
         # WIP
@@ -158,7 +159,6 @@ class MemoryChunk:
 
         except Exception as err:
             print(err)
-            breakpoint()
         self.__memory_left[address_type] -= 1
         if self.__memory_left[address_type] <= 0:
             raise Exception(f'OUT OF MEMORY. type = {address_type}')
@@ -178,7 +178,6 @@ class MemoryChunk:
 
         except Exception as err:
             print(err)
-            breakpoint()
 
         # set new array size and chec that there's still space
         self.__memory_left[address_type] -= var_size
@@ -198,19 +197,27 @@ class MemoryChunk:
             literal_memory[memory_index] = None
         except Exception as err:
             print(err)
-            breakpoint()
         self.__memory_left[address_type] -= 1
         if self.__memory_left[address_type] <= 0:
             raise Exception(f'OUT OF MEMORY. type = {address_type}')
 
     def set_val_for_id(self, res_id, value_id):
-        value_address = self.find_address(value_id)
-        address_to_set = self.find_address(res_id)
+        value_address, _ = self.find_address(value_id)
+        address_to_set, _ = self.find_address(res_id)
         literal_memory[address_to_set] = literal_memory[value_address]
 
-    def set_cte_val_for_id(self, res_id, value):
-        address = self.find_address(res_id)
-        literal_memory[address] = value
+    def set_cte_val_for_id(self, res_id, value, value_type=None):
+        if value_type == None:
+            address, _ = self.find_address(res_id)
+            literal_memory[address] = value
+        else:
+            address, var_type = self.find_address(res_id)
+            if value_type == var_type:
+                literal_memory[address] = value
+            else:
+                raise Exception(
+                    f'Type mismatch: unable to assign {value} of type {value_type} to ID {res_id} of type {var_type}.'
+                    )
 
     def print(self):
         # internal method, used for debugging
@@ -224,7 +231,7 @@ class MemoryChunk:
         print('chars', chars)
 
     def get_value(self, var_id):
-        address = self.find_address(var_id)
+        address, _ = self.find_address(var_id)
         if not address:
             # if theres no address, then it's a constant, get value from there
             memory = Memory.get()
@@ -262,7 +269,7 @@ class MemoryChunk:
         if operator == '||':
             result_value = left_value or right_value
 
-        result_address = self.find_address(result_var)
+        result_address, _ = self.find_address(result_var)
         literal_memory[result_address] = result_value
 
 

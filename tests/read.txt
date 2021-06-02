@@ -1,0 +1,25 @@
+program read_test;
+
+class Thing {
+    attributes
+        int : size;
+};
+
+hivar
+    int : x;
+    float : y;
+    char : c;
+    int : arr[3];
+    int : mat[3,3];
+    Thing : thing;
+byevar
+
+main() {
+
+    write("enter an int: ");
+    read(x);
+
+    write("you entered: ");
+    write(x);
+
+};
