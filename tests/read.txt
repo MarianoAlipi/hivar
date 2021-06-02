@@ -9,17 +9,23 @@ hivar
     int : x;
     float : y;
     char : c;
-    int : arr[3];
-    int : mat[3,3];
-    Thing : thing;
 byevar
 
 main() {
 
-    write("enter an int: ");
+    write("Enter an int: ");
     read(x);
-
-    write("you entered: ");
+    write("You entered: ");
     write(x);
+
+    write("\nEnter a float: ");
+    read(y);
+    write("You entered: ");
+    write(y);
+
+    write("\nEnter a char: ");
+    read(c);
+    write("You entered: ");
+    write(c);
 
 };

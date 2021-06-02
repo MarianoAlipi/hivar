@@ -52,3 +52,4 @@ except Exception as err:
     print('\n---------------------')
     print(f'Oh no! Something went wrong during the execution.')
     print(err)
+    print()
