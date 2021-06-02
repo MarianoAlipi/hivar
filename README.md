@@ -20,6 +20,8 @@ and see your output on terminal
 
 
 ## Team
-made with love by 
-Roberta González Garza A01570010
+made with love by
+
+
+Roberta González Garza A01570010  
 Mariano García Alipi A00822247
