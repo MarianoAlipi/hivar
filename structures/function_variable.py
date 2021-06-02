@@ -29,7 +29,7 @@ class Variable:
         # we only call these when it's specified that a value has dims, so we raise exceptions when they dont have any
         dims = self.dims()
         if not dims:
-            raise Exception(f'trying to access i for atomic var {self.__name}')
+            raise Exception(f'Trying to index atomic variable \'{self.__name}\'.')
         elif type(dims) is tuple:
             return dims[0]
         else:
@@ -39,11 +39,11 @@ class Variable:
         # we only call these when it's specified that a value has dims, so we raise exceptions when they dont have any
         dims = self.dims()
         if not dims:
-            raise Exception(f'trying to access j for atomic var {self.__name}')
+            raise Exception(f'Trying to index atomic variable \'{self.__name}\'.')
         elif type(dims) is tuple:
             return dims[1]
         else:
-            raise Exception(f'trying to access j for array var {self.__name}')
+            raise Exception(f'Trying to index array \'{self.__name}\' as a matrix.')
 
     def get_size(self):
         # size refers to the amount of memory spaces needed

@@ -29,14 +29,14 @@ def validate_existing(func_id, continue_execution=False):
             return False
         else:
             raise Exception(
-                f'Function "{func_id}" not in funcdirectory')
+                f'Function \'{func_id}\' not in function directory.')
     return prefix(func_id)
 
 
 def validate_new(func_id):
     if prefix(func_id) in FuncDirectory:
         raise Exception(
-            f'Function "{func_id}" already in funcdirectory')
+            f'Function \'{func_id}\' already in function directory.')
     return prefix(func_id)
 
 

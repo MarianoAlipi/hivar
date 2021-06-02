@@ -173,8 +173,8 @@ def process_quad(vm, quad):
         res_value = memory.active_memory().get_value(right)
         if res_value >= res:
             raise Exception(
-                f'Out of bounds: {left} has a value of {res_value}, ' +
-                f'must be between 0 and {res}')
+                f'Out of bounds: \'{left}\' has a value of {res_value}, ' +
+                f'must be between 0 and {res - 1}.')
         array_index().push(right)
         vm.point_to_next_quad()
     elif op == 'verifyr':
@@ -182,8 +182,8 @@ def process_quad(vm, quad):
         res_value = memory.active_memory().get_value(right)
         if res_value >= res:
             raise Exception(
-                f'Out of bounds: {left} has a value of {res_value}, ' +
-                f'must be between 0 and {res}')
+                f'Out of bounds: \'{left}\' has a value of {res_value}, ' +
+                f'must be between 0 and {res - 1}.')
         matrix_index().push(res_value)
         vm.point_to_next_quad()
     elif op == 'verifyc':
@@ -191,14 +191,14 @@ def process_quad(vm, quad):
         res_value = memory.active_memory().get_value(right)
         if res_value >= res:
             raise Exception(
-                f'Out of bounds: {left} has a value of {res_value}, ' +
-                f'must be between 0 and {res}')
+                f'Out of bounds: \'{left}\' has a value of {res_value}, ' +
+                f'must be between 0 and {res - 1}.')
         rows = matrix_index().pop()
         matrix_index().push((rows, res_value))
         vm.point_to_next_quad()
     else:
         raise Exception(
-            f'unrecognized quad instruction: {op}, {left}, {right}, {res}')
+            f'Unrecognized operation in quadruple: ({op}, {left}, {right}, {res})')
 
 
 def assign_params(vm, memory, func_id):

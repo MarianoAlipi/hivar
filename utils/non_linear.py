@@ -15,8 +15,7 @@ def create_gotof(st):
     # Make sure the condition evaluates to a boolean.
     if exp_type != 'bool':
         raise Exception(
-            f'Type mismatch. \
-            Expected bool but expression resolved to {exp_type}.'
+            f'Type mismatch: expected boolean but expression resolved to \'{exp_type}\'.'
         )
     else:
         exp_eval = st.operands().pop()
@@ -76,8 +75,7 @@ def eval_while_exp(st):
     # Make sure the condition evaluates to a boolean.
     if exp_type != 'bool':
         raise Exception(
-            f'Type mismatch. \
-            Expected bool but expression resolved to {exp_type}.'
+            f'Type mismatch: expected boolean but expression resolved to \'{exp_type}\'.'
         )
     else:
         exp_eval = st.operands().pop()

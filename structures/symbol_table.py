@@ -37,7 +37,7 @@ class SymbolTable:
         if is_valid():
             self.__current_type = new_type
         else:
-            raise Exception(f"Invalid type: {new_type}")
+            raise Exception(f"Invalid type: '{new_type}'.")
 
     def current_type(self):
         return self.__current_type
@@ -166,7 +166,7 @@ class SymbolTable:
     def __init__(self):
         if SymbolTable.__instance:
             raise Exception(
-                "Symbol Table already declared, use 'SymbolTable.get()'")
+                "Symbol Table already declared, use 'SymbolTable.get()'.")
         else:
             SymbolTable.__instance = self
             self.__scope_stack = deque()

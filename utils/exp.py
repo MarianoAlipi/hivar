@@ -41,7 +41,7 @@ def assign_to_var(st):
     res_var_type = st.current_scope().get_var_from_id(res_var).var_type()
     if res_var_type != left_type:
         raise Exception(
-            f'Problem while assigning var {res_var}: types do not match. left_op: {left_op}, res_var_type: {res_var_type}, operator: {operator}')
+            f'Problem while assigning variable {res_var}: types do not match.\nLeft operator: {left_op}\nType of the variable to assign: {res_var_type}')
     quad = Quad(operator, left_op, right_op, res_var)
     st.quads().append(quad)
 
@@ -57,7 +57,7 @@ def assign_func_to_var(st, params):
     func_return_type = st.current_scope().get_func_from_id(func_id).return_type()
     if res_var_type != func_return_type:
         raise Exception(
-            f'Problem while assigning var {res_var}: types do not match. res_var: {res_var}, func: {func_id}, func_return_type: {func_return_type}')
+            f'Problem while assigning variable {res_var}: types do not match.\nVariable to assign: {res_var}\nFunction: {func_id}\nFunction return type: {func_return_type}')
     quad = Quad('ASSGN', res_var, '', func_id)
     st.quads().append(quad)
 
@@ -85,8 +85,7 @@ def create_param_assignment_quads(st):
                 right_type = param[0]
         if left_type != right_type:
             raise Exception(
-                f'Type mismatch. \
-                Expected {right_type} param but got {left_type}.'
+                f'Type mismatch: expected \'{right_type}\' parameter but received \'{left_type}\'.'
             )
         param_quad = Quad('param', param_vals[i], '', param_keys[i])
         st.quads().append(param_quad)
@@ -105,7 +104,7 @@ def set_return_val(st):
     var_type = st.current_scope().get_var_from_id(st.operands().top()).var_type()
     if function_type != var_type:
         raise Exception(
-            f'Problem while returning val for function {st.current_scope_name()} types do not match. function_type: {function_type}, var_type: {var_type}')
+            f'Problem while returning value for function \'{st.current_scope_name()}\': types do not match.\nFunction type: {function_type}\nVariable type: {var_type}')
     # creates quad with the value that it must return
     return_quad = Quad('return', '', '', st.operands().top())
     st.quads().append(return_quad)

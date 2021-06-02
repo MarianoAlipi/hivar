@@ -51,7 +51,7 @@ class VirtualMachine:
     def __init__(self):
         if VirtualMachine.__instance:
             raise Exception(
-                "VirtualMachine already declared, use 'VirtualMachine.get()'")
+                "VirtualMachine already declared, use 'VirtualMachine.get()'.")
         else:
             VirtualMachine.__instance = self
             self.__ip = 0

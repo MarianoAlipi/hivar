@@ -723,7 +723,7 @@ def p_set_return_quad_val(p):
     func_id = p[-1]
     if not validate_existing(func_id, True):
         raise Exception(
-            f"Function {func_id} not found in scope {st.current_scope_name()}")
+            f"Function '{func_id}' not found in scope '{st.current_scope_name()}'.")
     func_jump = Quad('gosub', '', '', func_id)
     st.pending_jumps().push(func_jump)
     # clear params
@@ -999,11 +999,14 @@ class SyntaxError(Exception):
 
 
 def p_error(p):
+    line_no = -1
     if p == None:
-        token = 'End of file'
+        line_no = p.lineno
+        token = 'end of file'
     else:
-        token = f'{p.type}(\'{p.value}\')'
-    raise SyntaxError(token)
+        line_no = p.lineno
+        token = f'\'{p.value}\''
+    raise SyntaxError(token, line_no)
 
 
 def p_save_type(p):

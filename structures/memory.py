@@ -74,7 +74,7 @@ class MemoryChunk:
             address, address_type = global_mem.find_dim_address(var_id, False)
             if not address:
                 raise Exception(
-                    f"couldn't find dim address for var {var_id}")
+                    f"Could not find dimensions address for variable '{var_id}'.")
             return address, address_type
         return None, None
 
@@ -145,9 +145,9 @@ class MemoryChunk:
                 address, var_type = global_mem.find_address(var_id, False)
                 if not address:
                     raise Exception(
-                        f"couldn't find address for var {var_id}")
+                        f"Could not find address for variable '{var_id}'.")
             return address, var_type
-        raise Exception(f"couldn't find address for var {var_id}")
+        raise Exception(f"Could not find address for variable '{var_id}'.")
 
     def init_object(self, var_id, address_type, scope):
         # WIP
@@ -170,7 +170,7 @@ class MemoryChunk:
             print(err)
         self.__memory_left[address_type] -= 1
         if self.__memory_left[address_type] <= 0:
-            raise Exception(f'OUT OF MEMORY. type = {address_type}')
+            raise Exception(f'Out of memory for type \'{address_type}\'.')
 
     def init_array(self, var_id, address_type, scope, var_size):
         try:
@@ -191,7 +191,7 @@ class MemoryChunk:
         # set new array size and chec that there's still space
         self.__memory_left[address_type] -= var_size
         if self.__memory_left[address_type] <= 0:
-            raise Exception(f'OUT OF MEMORY. type = {address_type}')
+            raise Exception(f'Out of memory for type \'{address_type}\'.')
 
     def init_address(self, var_id, address_type, scope):
         try:
@@ -208,7 +208,7 @@ class MemoryChunk:
             print(err)
         self.__memory_left[address_type] -= 1
         if self.__memory_left[address_type] <= 0:
-            raise Exception(f'OUT OF MEMORY. type = {address_type}')
+            raise Exception(f'Out of memory for type \'{address_type}\'.')
 
     def set_val_for_id(self, res_id, value_id):
         value_address, _ = self.find_address(value_id)
@@ -317,19 +317,19 @@ class Memory:
             return literal_memory[address]
         except:
             raise Exception(
-                f"accessing empty memory address {address}")
+                f"Accessing empty memory address '{address}'.")
 
     def assign_value_to_address(self, value, address):
         try:
             literal_memory[address] = value
         except:
             raise Exception(
-                f"assigning empty memory address {address}")
+                f"Assigning empty memory address '{address}'.")
 
     def __init__(self):
         if Memory.__instance:
             raise Exception(
-                "Memory already declared, use 'Memory.get()'")
+                "Memory already declared, use 'Memory.get()'.")
         else:
             Memory.__instance = self
             self.__global = MemoryChunk()

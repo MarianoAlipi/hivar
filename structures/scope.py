@@ -33,19 +33,19 @@ class Scope:
             return self.funcs()[func_name]
         else:
             raise Exception(
-                f'Function "{func_name}" not found')
+                f'Function \'{func_name}\' not found.')
 
     def var(self, var_name):
         if var_name in self.vars():
             return self.vars()[var_name]
         else:
             raise Exception(
-                f'Variable "{var_name}" not found')
+                f'Variable \'{var_name}\' not found.')
 
     def add_func(self, new_name, func_type=None):
         if new_name in self.funcs():
             raise Exception(
-                f'Function "{new_name}" is already declared in this scope')
+                f'Function \'{new_name}\' is already declared in this scope.')
         # creates new function with empty params, params will be added later
         self.__funcs[new_name] = Function(new_name, func_type, [])
         return self.__funcs[new_name]
@@ -53,17 +53,17 @@ class Scope:
     def add_var(self, new_name, var_type=None, is_const=False):
         if new_name in self.vars() and not is_const:
             raise Exception(
-                f'Variable "{new_name}" is already declared in this scope')
+                f'Variable \'{new_name}\' is already declared in this scope.')
         self.__vars[new_name] = Variable(new_name, var_type)
 
     def add_obj_var(self, global_scope, new_name, var_type):
         if new_name in self.vars():
             raise Exception(
-                f'Variable "{new_name}" is already declared in this scope')
+                f'Variable \'{new_name}\' is already declared in this scope.')
         # checks that the class actually exists
         if var_type not in global_scope.scopes():
             raise Exception(
-                f'class "{var_type}" not found in global scope')
+                f'Class \'{var_type}\' not found in global scope.')
         class_scope = global_scope.scopes()[var_type]
         attributes = class_scope.attributes()
         var_attrs = {}
@@ -90,7 +90,7 @@ class Scope:
                 return None
             else:
                 raise Exception(
-                    f'Can not find variable "{var_id}"')
+                    f'Could not find variable \'{var_id}\'.')
 
     def get_func_from_id(self, func_id):
         if func_id in self.funcs():
@@ -109,7 +109,7 @@ class Scope:
                         return self.scopes()[scope].funcs()[func_id]
                 breakpoint()
                 raise Exception(
-                    f'Can not find function "{func_id}"')
+                    f'Could not find function \'{func_id}\'.')
 
     def add_attribute(self, attr):
         self.__attributes.append(attr)

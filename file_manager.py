@@ -1,15 +1,13 @@
-import sys
-
-
 def get_file_content(filename):
     # open file, handle errors
     try:
         file = open(filename, 'r')
     except FileNotFoundError:
-        print('File does not exist')
+        print('Error: file not found.\n')
         exit(1)
-    except Exception:
-        print('Unable to open file')
+    except Exception as err:
+        print('Error: unable to open file.\n')
+        print(err)
         exit(1)
 
     # load file content and return

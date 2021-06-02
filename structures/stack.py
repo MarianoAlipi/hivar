@@ -1,7 +1,6 @@
 def valid(self):
     if len(self.stack()) <= 0:
-        raise Exception(
-            "stack is empty")
+        raise Exception('Stack is empty.')
     return True
 
 
@@ -12,7 +11,7 @@ def is_empty(self):
 
 
 def push_operator(st, op):
-    if op == '(': #handling for false bottom
+    if op == '(': # handling for false bottom
         st.operands_stacks().push(st.operands())
         st.set_operands(Stack())
 
@@ -26,7 +25,7 @@ def push_operator(st, op):
 
 
 def pop_operator(st, op):
-    if op == ')':#handling for false bottom removal
+    if op == ')': # handling for false bottom removal
         try:
             prev_operands = st.operands_stacks().pop()
             st.set_operands(prev_operands)

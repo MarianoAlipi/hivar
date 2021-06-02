@@ -9,9 +9,8 @@ def match_operators(left_op, right_op, operator):
     try:
         res = cube[left_op][right_op][operator]
         if res is ERR:
-            raise Exception("operator types did not match")
+            raise Exception("Operand types do not match.")
         return res
     except Exception as err:
         raise Exception(
-            'Problem while checking types, the operands probably do not exist. '
-            f'left_op: {left_op}, right_op: {right_op}, operator: {operator}. Error: {err}')
+            f'Problem while checking types. The operands probably do not exist.\nLeft operand: {left_op}\nRight operand: {right_op}\nOperator: {operator}\nError: {err}')
