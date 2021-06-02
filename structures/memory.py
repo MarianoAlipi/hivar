@@ -99,6 +99,12 @@ class MemoryChunk:
                 mat_index = matrix_index().pop()
                 row = mat_index[0]
                 col = mat_index[1]
+                if not is_cte(row):
+                    row_value, _ = self.find_address(row)
+                    row = literal_memory[row_value]
+                if not is_cte(col):
+                    col_value, _ = self.find_address(col)
+                    col = literal_memory[col_value]
                 return base + (has_dims[1] * row) + col, var_type
             else:  # if it's an array
                 offset = array_index().pop()
